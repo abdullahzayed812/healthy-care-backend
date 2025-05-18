@@ -10,24 +10,38 @@ export class AuthRepository {
 
   // Find user by email
   async findByEmail(email: string): Promise<User | null> {
-    const result = await this.dbConnection.query<any[]>("SELECT * FROM users WHERE email = ?", [email]);
+    try {
+      const result = await this.dbConnection.query<any[]>("SELECT * FROM users WHERE email = ?", [email]);
 
-    if (result.length === 0) {
-      return null;
+      if (result.length === 0) {
+        return null; // No user found, return null
+      }
+
+      const userData = result[0];
+      return new User(userData.id, userData.email, userData.first_name, userData.last_name, userData.role);
+    } catch (error) {
+      console.error("Error finding user by email:", error);
+      throw new Error("Database query failed. Please try again later.");
     }
-
-    const userData = result[0];
-    return new User(userData.id, userData.email, userData.first_name, userData.last_name);
   }
 
   // Register a new user
-  async createUser(user: Omit<User, "id">): Promise<User> {
-    const result = await this.dbConnection.query<any>(
-      `INSERT INTO users (email, password, first_name, last_name) VALUES (?, ?, ?, ?)`,
-      [user.email, user.password, user.firstName, user.lastName]
-    );
+  async createUser(user: Omit<User, "id">): Promise<User | null> {
+    try {
+      const result = await this.dbConnection.query<any>(
+        `INSERT INTO users (email, password, first_name, last_name, role) VALUES (?, ?, ?, ?, ?)`,
+        [user.email, user.password, user.firstName, user.lastName, user.role]
+      );
 
-    const id = result.insertId;
-    return new User(id, user.email, user.firstName, user.lastName);
+      if (!result.insertId) {
+        return null; // Insertion failed
+      }
+
+      const id = result.insertId;
+      return new User(id, user.email, user.firstName, user.lastName, user.role);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw new Error("Failed to register user. Please try again later.");
+    }
   }
 }

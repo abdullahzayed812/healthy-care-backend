@@ -1,10 +1,13 @@
+import { User, UserRole } from "../entities/User";
+
 export interface LoginRequest {
   email: string;
   password: string;
 }
 
 export interface LoginResponse {
-  token: string;
+  user: User;
+  accessToken: string;
 }
 
 export interface RegisterRequest {
@@ -12,6 +15,7 @@ export interface RegisterRequest {
   password: string;
   firstName: string;
   lastName: string;
+  role: UserRole;
 }
 
 export interface RegisterResponse {
@@ -21,4 +25,5 @@ export interface RegisterResponse {
     firstName: string;
     lastName: string;
   };
+  accessToken: string;
 }

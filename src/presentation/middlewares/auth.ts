@@ -24,6 +24,7 @@ export class AuthMiddleware {
     }
 
     res.locals.userId = decoded.userId;
+    res.locals.userEmail = decoded.userEmail;
     res.locals.userRole = decoded.userRole;
 
     next();

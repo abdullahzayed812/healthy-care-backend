@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { AvailabilityController } from "../controller/AvailabilityController";
 import { container } from "../../di/container";
+import { AuthMiddleware } from "../middlewares/auth";
 
 const router = Router();
 
@@ -8,7 +9,7 @@ const controller = new AvailabilityController(container.availabilityService);
 
 router.get("/", controller.getAll);
 router.get("/:id", controller.getById);
-router.get("/doctors/:id", controller.getByDoctor);
+router.get("/doctors/:id", AuthMiddleware.authenticate, AuthMiddleware.requireRole("patient"), controller.getByDoctor);
 router.post("/", controller.create);
 router.put("/:id", controller.update);
 router.delete("/:id", controller.delete);

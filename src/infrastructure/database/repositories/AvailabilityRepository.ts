@@ -1,6 +1,7 @@
 import { MySqlConnection } from "../connections/MySqlConnection";
 import { Availability } from "../../../core/entities/Availability";
 import { IAvailabilityRepository } from "../../../core/interfaces/repositories/IAvailabilityRepository";
+import { CreateAvailabilityRequest } from "../../../core/dto/availability.dto";
 
 export class AvailabilityRepository implements IAvailabilityRepository {
   constructor(private db: MySqlConnection) {}
@@ -52,7 +53,7 @@ export class AvailabilityRepository implements IAvailabilityRepository {
     );
   }
 
-  async create(data: Omit<Availability, "id">): Promise<Availability> {
+  async create(data: CreateAvailabilityRequest): Promise<Availability> {
     const now = new Date();
     const result = await this.db.query<any>(
       `INSERT INTO availability (doctor_id, day_of_week, start_time, end_time, created_at, updated_at)
