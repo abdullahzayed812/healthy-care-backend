@@ -17,4 +17,8 @@ export class User {
   get fullName(): string {
     return `${this.firstName} ${this.lastName}`;
   }
+
+  toSafeObject(): User {
+    return new User(this.id, this.email, this.firstName, this.lastName, this.role);
+  }
 }

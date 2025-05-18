@@ -26,9 +26,8 @@ export class AuthService {
 
     const accessToken = signAccessToken({ id: user.id, email: user.email });
     const refreshToken = signRefreshToken({ id: user.id, email: user.email });
-    const { password: _, ...userWithoutPassword } = user;
 
-    return { user: userWithoutPassword, accessToken, refreshToken };
+    return { user: user.toSafeObject(), accessToken, refreshToken };
   }
 
   async register(request: RegisterRequest): Promise<{ user: User; accessToken: string; refreshToken: string }> {
