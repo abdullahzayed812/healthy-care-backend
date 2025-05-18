@@ -6,11 +6,6 @@ import { AuthMiddleware } from "../middlewares/auth";
 const router = Router();
 const controller = new AppointmentController(container.appointmentService);
 
-router.get("/", controller.getAll);
-router.get("/:id", controller.getById);
-router.post("/", controller.create);
-router.put("/:id", controller.update);
-router.delete("/:id", controller.delete);
 router.get("/doctors/:id", AuthMiddleware.authenticate, AuthMiddleware.requireRole("doctor"), controller.getByDoctorId);
 router.get(
   "/patients/:id",
@@ -18,5 +13,11 @@ router.get(
   AuthMiddleware.requireRole("patient"),
   controller.getByPatientId
 );
+
+router.get("/", controller.getAll);
+router.post("/", controller.create);
+router.get("/:id", controller.getById);
+router.put("/:id", controller.update);
+router.delete("/:id", controller.delete);
 
 export default router;

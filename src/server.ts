@@ -30,11 +30,6 @@ export async function createServer(logRequests: boolean = true) {
   app.use("/api/availability", availabilityRoutes);
   app.use("/api/records", patientRecordRoutes);
 
-  // Default 404 handler
-  app.use("*", (req, res) => {
-    res.status(404).json({ error: "Route not found" });
-  });
-
   // Error handler
   app.use(errorHandlerMiddleware);
 

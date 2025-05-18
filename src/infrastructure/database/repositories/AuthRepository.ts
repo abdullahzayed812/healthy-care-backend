@@ -18,7 +18,14 @@ export class AuthRepository {
       }
 
       const userData = result[0];
-      return new User(userData.id, userData.email, userData.first_name, userData.last_name, userData.role);
+      return new User(
+        userData.id,
+        userData.email,
+        userData.first_name,
+        userData.last_name,
+        userData.role,
+        userData.password
+      );
     } catch (error) {
       console.error("Error finding user by email:", error);
       throw new Error("Database query failed. Please try again later.");
