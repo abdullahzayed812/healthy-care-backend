@@ -7,7 +7,7 @@ export class AvailabilityRepository implements IAvailabilityRepository {
   constructor(private db: MySqlConnection) {}
 
   async findAll(): Promise<Availability[]> {
-    const rows = await this.db.query<any[]>("SELECT * FROM availability");
+    const rows = await this.db.query<any[]>("SELECT * FROM availabilities");
     return rows.map(
       (row) =>
         new Availability(
@@ -23,7 +23,7 @@ export class AvailabilityRepository implements IAvailabilityRepository {
   }
 
   async findById(id: number): Promise<Availability | null> {
-    const rows = await this.db.query<any[]>("SELECT * FROM availability WHERE id = ?", [id]);
+    const rows = await this.db.query<any[]>("SELECT * FROM availabilities WHERE id = ?", [id]);
     if (!rows.length) return null;
     const row = rows[0];
     return new Availability(
@@ -38,7 +38,7 @@ export class AvailabilityRepository implements IAvailabilityRepository {
   }
 
   async findByDoctorId(doctorId: number): Promise<Availability[]> {
-    const rows = await this.db.query<any[]>("SELECT * FROM availability WHERE doctor_id = ?", [doctorId]);
+    const rows = await this.db.query<any[]>("SELECT * FROM availabilities WHERE doctor_id = ?", [doctorId]);
     return rows.map(
       (row) =>
         new Availability(
@@ -56,7 +56,7 @@ export class AvailabilityRepository implements IAvailabilityRepository {
   async create(data: CreateAvailabilityRequest): Promise<Availability> {
     const now = new Date();
     const result = await this.db.query<any>(
-      `INSERT INTO availability (doctor_id, day_of_week, start_time, end_time, created_at, updated_at)
+      `INSERT INTO availabilities (doctor_id, day_of_week, start_time, end_time, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?)`,
       [data.doctorId, data.dayOfWeek, data.startTime, data.endTime, now, now]
     );
@@ -84,12 +84,12 @@ export class AvailabilityRepository implements IAvailabilityRepository {
     params.push(new Date());
     params.push(id);
 
-    const result = await this.db.query<any>(`UPDATE availability SET ${updates.join(", ")} WHERE id = ?`, params);
+    const result = await this.db.query<any>(`UPDATE availabilities SET ${updates.join(", ")} WHERE id = ?`, params);
     return result.affectedRows > 0;
   }
 
   async delete(id: number): Promise<boolean> {
-    const result = await this.db.query<any>("DELETE FROM availability WHERE id = ?", [id]);
+    const result = await this.db.query<any>("DELETE FROM availabilities WHERE id = ?", [id]);
     return result.affectedRows > 0;
   }
 }

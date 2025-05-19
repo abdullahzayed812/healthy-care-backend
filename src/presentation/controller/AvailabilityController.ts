@@ -42,7 +42,7 @@ export class AvailabilityController {
     }
   };
 
-  // GET /doctors/:doctorId/availability
+  // GET /availabilities/doctors/:id
   public getByDoctor: ExpressHandler<{}, GetAllAvailabilitiesResponse, { doctorId: string }> = async (req, res) => {
     try {
       const doctorId = parseInt(req.params.doctorId);
