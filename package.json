@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "npx tsx watch src/index.ts"
+    "server:dev": "npx tsx watch src/index.ts"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
