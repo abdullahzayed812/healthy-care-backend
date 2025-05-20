@@ -1,5 +1,6 @@
 import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from "../../core/dto/auth.dto";
 import { AuthService } from "../../infrastructure/services/AuthService";
+import { handleErrorResponse } from "../../utils/errors/errorResponse";
 import { ExpressHandler } from "../../utils/types/apis";
 
 export class AuthController {
@@ -22,8 +23,7 @@ export class AuthController {
 
       res.status(200).json({ user, accessToken });
     } catch (error: any) {
-      console.error("Error logging in:", error);
-      res.status(500).json({ details: error.message });
+      handleErrorResponse(res, error);
     }
 
     return;
@@ -42,9 +42,7 @@ export class AuthController {
 
       res.status(201).json({ user, accessToken });
     } catch (error: any) {
-      console.error("Error registering:", error);
-
-      res.status(500).json({ details: error.message });
+      handleErrorResponse(res, error);
     }
 
     return;
@@ -70,8 +68,7 @@ export class AuthController {
 
       res.status(200).json({ accessToken, refreshToken: newRefreshToken });
     } catch (error: any) {
-      console.error("Error refreshing token:", error);
-      res.status(500).json({ details: error.message });
+      handleErrorResponse(res, error);
     }
 
     return;
@@ -82,8 +79,7 @@ export class AuthController {
       res.clearCookie("refreshToken");
       res.status(200).json({ message: "Logged out successfully" });
     } catch (error) {
-      console.error("Error logging out:", error);
-      res.status(500).json({ details: "Failed to log out" });
+      handleErrorResponse(res, error);
     }
 
     return;

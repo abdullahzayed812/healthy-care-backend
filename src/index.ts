@@ -11,7 +11,7 @@ import { container } from "./di/container";
   checkRequiredEnvVars(["ENV", "PORT", "JWT_SECRET", "DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME"]);
 
   container.dbManager.runMigrations();
-  container.dbManager.runMigrations();
+  // container.dbManager.runSeeds();
 
   const server = await createServer();
 

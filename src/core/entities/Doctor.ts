@@ -1,16 +1,16 @@
-export class Doctor {
+import { User } from "./User";
+
+export class Doctor extends User {
   constructor(
     public id: number,
-    public firstName: string,
-    public lastName: string,
     public email: string,
+    public username: string,
     public phoneNumber: string,
     public specialization: string,
     public createdAt: Date = new Date(),
     public updatedAt: Date = new Date()
-  ) {}
-
-  get fullName(): string {
-    return `${this.firstName} ${this.lastName}`;
+  ) {
+    super(id, email, username, "doctor", undefined, phoneNumber, undefined, createdAt, updatedAt);
+    this.specialization = specialization;
   }
 }

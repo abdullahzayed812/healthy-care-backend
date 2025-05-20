@@ -9,7 +9,6 @@ export function isRegisterRequest(body: RegisterRequest): body is RegisterReques
     typeof body === "object" &&
     typeof body.email === "string" &&
     typeof body.password === "string" &&
-    typeof body.firstName === "string" &&
-    typeof body.lastName === "string"
+    typeof body.username === "string"
   );
 }

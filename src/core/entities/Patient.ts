@@ -1,18 +1,17 @@
-export class Patient {
+import { User } from "./User";
+
+export class Patient extends User {
   constructor(
     public id: number,
-    public firstName: string,
-    public lastName: string,
     public email: string,
+    public username: string,
     public phoneNumber: string,
     public dateOfBirth: Date,
     public address: string,
     public createdAt: Date = new Date(),
     public updatedAt: Date = new Date()
-  ) {}
-
-  get fullName(): string {
-    return `${this.firstName} ${this.lastName}`;
+  ) {
+    super(id, email, username, "patient", undefined, phoneNumber, address, createdAt, updatedAt);
   }
 
   get age(): number {

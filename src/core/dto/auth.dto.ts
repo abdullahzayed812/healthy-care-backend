@@ -13,8 +13,7 @@ export interface LoginResponse {
 export interface RegisterRequest {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  username: string;
   role: UserRole;
 }
 
@@ -22,8 +21,7 @@ export interface RegisterResponse {
   user: {
     id: number;
     email: string;
-    firstName: string;
-    lastName: string;
+    username: string;
   };
   accessToken: string;
 }
