@@ -1,6 +1,8 @@
 import {
   CreateAvailabilityRequest,
   CreateAvailabilityResponse,
+  CreateBulkAvailabilityRequest,
+  CreateBulkAvailabilityResponse,
   DeleteAvailabilityParams,
   DeleteAvailabilityRequest,
   DeleteAvailabilityResponse,
@@ -58,6 +60,21 @@ export class AvailabilityController {
     try {
       const availability = await this.availabilityService.create(req.body as CreateAvailabilityRequest);
       res.status(201).json(availability);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to create availability", details: String(err) });
+    }
+  };
+
+  // POST /availabilities/bulk
+  public createBulk: ExpressHandler<CreateBulkAvailabilityRequest, CreateBulkAvailabilityResponse> = async (
+    req,
+    res
+  ) => {
+    try {
+      const { success, insertedCount, message } = await this.availabilityService.createBulk(
+        req.body as CreateBulkAvailabilityRequest
+      );
+      res.status(201).json({ success, insertedCount, message: "Availabilities created successfully." });
     } catch (err) {
       res.status(500).json({ error: "Failed to create availability", details: String(err) });
     }

@@ -1,6 +1,10 @@
 import { IAvailabilityRepository } from "../../core/interfaces/repositories/IAvailabilityRepository";
 import { Availability } from "../../core/entities/Availability";
-import { CreateAvailabilityRequest, UpdateAvailabilityRequest } from "../../core/dto/availability.dto";
+import {
+  CreateAvailabilityRequest,
+  CreateBulkAvailabilityRequest,
+  UpdateAvailabilityRequest,
+} from "../../core/dto/availability.dto";
 
 export class AvailabilityService {
   constructor(private availabilityRepo: IAvailabilityRepository) {}
@@ -19,6 +23,10 @@ export class AvailabilityService {
 
   create(data: CreateAvailabilityRequest): Promise<Availability> {
     return this.availabilityRepo.create(data);
+  }
+
+  createBulk(data: CreateBulkAvailabilityRequest): Promise<any> {
+    return this.availabilityRepo.createBulk(data);
   }
 
   update(id: number, data: UpdateAvailabilityRequest): Promise<boolean> {

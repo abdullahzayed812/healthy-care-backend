@@ -1,7 +1,11 @@
 import { MySqlConnection } from "../connections/MySqlConnection";
 import { Availability } from "../../../core/entities/Availability";
 import { IAvailabilityRepository } from "../../../core/interfaces/repositories/IAvailabilityRepository";
-import { CreateAvailabilityRequest } from "../../../core/dto/availability.dto";
+import {
+  CreateAvailabilityRequest,
+  CreateBulkAvailabilityRequest,
+  CreateBulkAvailabilityResponse,
+} from "../../../core/dto/availability.dto";
 
 export class AvailabilityRepository implements IAvailabilityRepository {
   constructor(private db: MySqlConnection) {}
@@ -90,6 +94,48 @@ export class AvailabilityRepository implements IAvailabilityRepository {
 
   async delete(id: number): Promise<boolean> {
     const result = await this.db.query<any>("DELETE FROM availabilities WHERE id = ?", [id]);
+    return result.affectedRows > 0;
+  }
+
+  async createBulk(data: CreateBulkAvailabilityRequest): Promise<CreateBulkAvailabilityResponse> {
+    const { availabilities } = data;
+
+    if (availabilities.length === 0) {
+      return {
+        success: false,
+        message: "No availability data provided.",
+        insertedCount: 0,
+      };
+    }
+
+    return this.db.transaction(async (conn) => {
+      const values: any[] = [];
+      const placeholders: string[] = [];
+
+      availabilities.forEach((item) => {
+        placeholders.push("(?, ?, ?, ?)");
+        values.push(item.doctorId, item.dayOfWeek, item.startTime, item.endTime);
+      });
+
+      const [result]: any = await conn.execute(
+        `INSERT INTO availabilities 
+          (doctor_id, day_of_week, start_time, end_time)
+         VALUES ${placeholders.join(", ")}`,
+        values
+      );
+
+      const insertedCount = availabilities.length;
+
+      return {
+        success: true,
+        message: `${insertedCount} availability slots created successfully.`,
+        insertedCount,
+      };
+    });
+  }
+
+  async deleteByDoctorId(id: number): Promise<boolean> {
+    const result = await this.db.query<any>("DELETE FROM availabilities WHERE doctor_id = ?", [id]);
     return result.affectedRows > 0;
   }
 }

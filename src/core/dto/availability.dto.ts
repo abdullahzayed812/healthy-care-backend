@@ -20,6 +20,15 @@ export interface CreateAvailabilityRequest {
 }
 export interface CreateAvailabilityResponse extends Availability {}
 
+export interface CreateBulkAvailabilityRequest {
+  availabilities: Availability[];
+}
+export interface CreateBulkAvailabilityResponse {
+  success: boolean;
+  message: string;
+  insertedCount: number;
+}
+
 export interface UpdateAvailabilityParams extends ParamsDictionary {
   id: string;
 }
