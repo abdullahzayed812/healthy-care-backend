@@ -1,12 +1,17 @@
 import { User } from "../../../core/entities/User";
+import { IUserRepository } from "../../../core/interfaces/repositories/IUserRepository";
 import { DatabaseError } from "../../../utils/errors/DatabaseErrors";
 import { MySqlConnection } from "../connections/MySqlConnection";
 
-export class AuthRepository {
+export class UserRepository implements IUserRepository {
   private dbConnection: MySqlConnection;
 
   constructor(dbConnection: MySqlConnection) {
     this.dbConnection = dbConnection;
+  }
+
+  findById(id: number): Promise<User | null> {
+    throw new Error("Method not implemented.");
   }
 
   // Find user by email
@@ -22,8 +27,15 @@ export class AuthRepository {
       return new User(userData.id, userData.email, userData.username, userData.role, userData.password);
     } catch (error) {
       console.error("Error finding user by email:", error);
-      throw new DatabaseError("Failed to query user by email", "FIND_USER_DB_ERROR");
+      throw new DatabaseError("Failed to find user by email", "FIND_USER_DB_ERROR");
     }
+  }
+
+  findAll(): Promise<User[]> {
+    throw new Error("Method not implemented.");
+  }
+  create(entity: Partial<User>): Promise<User> {
+    throw new Error("Method not implemented.");
   }
 
   // Register a new user
@@ -39,10 +51,33 @@ export class AuthRepository {
       }
 
       const id = result.insertId;
+      await this.dbConnection.query<any>("INSERT INTO doctors (id) VALUES (?)", [id]);
+
       return new User(id, user.email, user.username, user.role);
     } catch (error) {
       console.error("Error creating user:", error);
       throw new DatabaseError("Failed to create user", "CREATE_USER_DB_ERROR");
+    }
+  }
+
+  update(id: number, entity: Partial<User>): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  delete(id: number): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+
+  async uploadAvatar(userId: string, avatarPath: string): Promise<boolean> {
+    try {
+      const result = await this.dbConnection.query<any>("UPDATE users SET avatar = ? WHERE id = ?", [
+        avatarPath,
+        userId,
+      ]);
+
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error("Error upload user avatar:", error);
+      throw new DatabaseError("Failed upload user avatar", "UPLOAD_AVATAR_DB_ERROR");
     }
   }
 }

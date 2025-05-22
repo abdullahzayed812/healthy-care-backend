@@ -33,6 +33,7 @@ export class AvailabilityController {
   public getById: ExpressHandler<{}, GetAvailabilityByIdResponse, GetAvailabilityByIdParams> = async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      // console.log(req.params.id);
       const availability = await this.availabilityService.getById(id);
       if (!availability) {
         res.status(404).json({ error: "Not found", details: "Availability not found" });
@@ -45,9 +46,9 @@ export class AvailabilityController {
   };
 
   // GET /availabilities/doctors/:id
-  public getByDoctor: ExpressHandler<{}, GetAllAvailabilitiesResponse, { doctorId: string }> = async (req, res) => {
+  public getByDoctor: ExpressHandler<{}, GetAllAvailabilitiesResponse, { id: string }> = async (req, res) => {
     try {
-      const doctorId = parseInt(req.params.doctorId);
+      const doctorId = parseInt(req.params.id);
       const availabilities = await this.availabilityService.getByDoctor(doctorId);
       res.json({ availabilities });
     } catch (err) {

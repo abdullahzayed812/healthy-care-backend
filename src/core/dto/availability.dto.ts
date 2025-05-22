@@ -12,16 +12,22 @@ export interface GetAvailabilityByIdParams extends ParamsDictionary {
 export interface GetAvailabilityByIdRequest {}
 export interface GetAvailabilityByIdResponse extends Availability {}
 
+export interface GetAvailabilityByDoctorIdParams {
+  id: string;
+}
+
 export interface CreateAvailabilityRequest {
   doctorId: number;
-  dayOfWeek: string;
+  dayOfWeek: number;
   startTime: string;
   endTime: string;
+  available: boolean;
 }
 export interface CreateAvailabilityResponse extends Availability {}
 
 export interface CreateBulkAvailabilityRequest {
-  availabilities: Availability[];
+  doctorId: number;
+  slots: Partial<Availability>[];
 }
 export interface CreateBulkAvailabilityResponse {
   success: boolean;
@@ -33,7 +39,7 @@ export interface UpdateAvailabilityParams extends ParamsDictionary {
   id: string;
 }
 export interface UpdateAvailabilityRequest {
-  dayOfWeek?: string;
+  dayOfWeek?: number;
   startTime?: string;
   endTime?: string;
 }

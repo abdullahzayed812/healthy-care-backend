@@ -7,12 +7,21 @@ import {
   isCreateAvailabilityRequest,
   isAvailabilityParams,
   isUpdateAvailabilityRequest,
+  isCreateBulkAvailabilityRequest,
+  isDoctorIdParams,
 } from "../validators/availabilityValidators";
 
 const router = Router();
 
 const controller = new AvailabilityController(container.availabilityService);
 
+router.get(
+  "/doctors/:id",
+  requestValidator.validate({ params: isDoctorIdParams }),
+  AuthMiddleware.authenticate,
+  AuthMiddleware.requireRole("patient", "doctor"),
+  controller.getByDoctor
+);
 router.get("/", AuthMiddleware.authenticate, AuthMiddleware.requireRole("admin"), controller.getAll);
 router.post(
   "/",
@@ -20,6 +29,13 @@ router.post(
   AuthMiddleware.authenticate,
   AuthMiddleware.requireRole("doctor"),
   controller.create
+);
+router.post(
+  "/bulk",
+  requestValidator.validate({ body: isCreateBulkAvailabilityRequest }),
+  AuthMiddleware.authenticate,
+  AuthMiddleware.requireRole("doctor"),
+  controller.createBulk
 );
 router.get(
   "/:id",
@@ -41,13 +57,6 @@ router.delete(
   AuthMiddleware.authenticate,
   AuthMiddleware.requireRole("doctor"),
   controller.delete
-);
-router.get(
-  "/doctors/:id",
-  requestValidator.validate({ params: isAvailabilityParams }),
-  AuthMiddleware.authenticate,
-  AuthMiddleware.requireRole("patient"),
-  controller.getByDoctor
 );
 
 export default router;

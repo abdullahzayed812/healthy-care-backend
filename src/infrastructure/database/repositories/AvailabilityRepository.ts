@@ -20,6 +20,7 @@ export class AvailabilityRepository implements IAvailabilityRepository {
           row.day_of_week,
           row.start_time,
           row.end_time,
+          row.available,
           new Date(row.created_at),
           new Date(row.updated_at)
         )
@@ -36,6 +37,7 @@ export class AvailabilityRepository implements IAvailabilityRepository {
       row.day_of_week,
       row.start_time,
       row.end_time,
+      row.available,
       new Date(row.created_at),
       new Date(row.updated_at)
     );
@@ -51,6 +53,7 @@ export class AvailabilityRepository implements IAvailabilityRepository {
           row.day_of_week,
           row.start_time,
           row.end_time,
+          row.available,
           new Date(row.created_at),
           new Date(row.updated_at)
         )
@@ -58,13 +61,56 @@ export class AvailabilityRepository implements IAvailabilityRepository {
   }
 
   async create(data: CreateAvailabilityRequest): Promise<Availability> {
-    const now = new Date();
     const result = await this.db.query<any>(
-      `INSERT INTO availabilities (doctor_id, day_of_week, start_time, end_time, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [data.doctorId, data.dayOfWeek, data.startTime, data.endTime, now, now]
+      `INSERT INTO availabilities (doctor_id, day_of_week, start_time, end_time, available)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [data.doctorId, data.dayOfWeek, data.startTime, data.endTime]
     );
-    return new Availability(result.insertId, data.doctorId, data.dayOfWeek, data.startTime, data.endTime, now, now);
+    return new Availability(
+      result.insertId,
+      data.doctorId,
+      data.dayOfWeek,
+      data.startTime,
+      data.endTime,
+      data.available
+    );
+  }
+
+  async createBulk(data: CreateBulkAvailabilityRequest): Promise<CreateBulkAvailabilityResponse> {
+    const { doctorId, slots } = data;
+
+    if (slots.length === 0) {
+      return {
+        success: false,
+        message: "No availability data provided.",
+        insertedCount: 0,
+      };
+    }
+
+    return this.db.transaction(async (conn) => {
+      const values: any[] = [];
+      const placeholders: string[] = [];
+
+      slots.forEach((item) => {
+        placeholders.push("(?, ?, ?, ?, ?, ?)");
+        values.push(item.id, doctorId, item.dayOfWeek, item.startTime, item.endTime, item.available);
+      });
+
+      const [result]: any = await conn.execute(
+        `INSERT INTO availabilities 
+          (id, doctor_id, day_of_week, start_time, end_time, available)
+         VALUES ${placeholders.join(", ")}`,
+        values
+      );
+
+      const insertedCount = slots.length;
+
+      return {
+        success: true,
+        message: `${insertedCount} availability slots created successfully.`,
+        insertedCount,
+      };
+    });
   }
 
   async update(id: number, data: Partial<Availability>): Promise<boolean> {
@@ -95,43 +141,6 @@ export class AvailabilityRepository implements IAvailabilityRepository {
   async delete(id: number): Promise<boolean> {
     const result = await this.db.query<any>("DELETE FROM availabilities WHERE id = ?", [id]);
     return result.affectedRows > 0;
-  }
-
-  async createBulk(data: CreateBulkAvailabilityRequest): Promise<CreateBulkAvailabilityResponse> {
-    const { availabilities } = data;
-
-    if (availabilities.length === 0) {
-      return {
-        success: false,
-        message: "No availability data provided.",
-        insertedCount: 0,
-      };
-    }
-
-    return this.db.transaction(async (conn) => {
-      const values: any[] = [];
-      const placeholders: string[] = [];
-
-      availabilities.forEach((item) => {
-        placeholders.push("(?, ?, ?, ?)");
-        values.push(item.doctorId, item.dayOfWeek, item.startTime, item.endTime);
-      });
-
-      const [result]: any = await conn.execute(
-        `INSERT INTO availabilities 
-          (doctor_id, day_of_week, start_time, end_time)
-         VALUES ${placeholders.join(", ")}`,
-        values
-      );
-
-      const insertedCount = availabilities.length;
-
-      return {
-        success: true,
-        message: `${insertedCount} availability slots created successfully.`,
-        insertedCount,
-      };
-    });
   }
 
   async deleteByDoctorId(id: number): Promise<boolean> {

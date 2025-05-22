@@ -1,17 +1,18 @@
 import jwt, { SignOptions } from "jsonwebtoken";
+import { UnauthorizedError } from "./errors/Errors";
 
 export interface JwtPayload {
-  userId: string;
-  userEmail: string;
-  userRole: string;
+  id: string;
+  email: string;
+  role: string;
 }
 
-export function signAccessToken(payload: object, expiresIn?: number): string {
+export function signAccessToken(payload: JwtPayload, expiresIn?: number): string {
   const options: SignOptions = { expiresIn: expiresIn ?? "1d" };
   return jwt.sign(payload, getJwtSecret(), options);
 }
 
-export function signRefreshToken(payload: object, expiresIn?: number): string {
+export function signRefreshToken(payload: JwtPayload, expiresIn?: number): string {
   const options: SignOptions = { expiresIn: expiresIn ?? "7d" };
   return jwt.sign(payload, getJwtSecret(), options); // Refresh token expires in 7 days
 }
@@ -23,9 +24,10 @@ export function verifyToken(token: string): JwtPayload | null {
     if (typeof decoded === "object") {
       return decoded as JwtPayload;
     }
+
     return null;
-  } catch (error) {
-    return null;
+  } catch (error: any) {
+    throw new UnauthorizedError(error.message);
   }
 }
 

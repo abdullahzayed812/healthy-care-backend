@@ -16,18 +16,18 @@ export class AuthMiddleware {
       return;
     }
 
-    const decoded = verifyToken(token);
+    try {
+      const decoded = verifyToken(token);
 
-    if (!decoded) {
+      res.locals.userId = decoded?.id;
+      res.locals.userEmail = decoded?.email;
+      res.locals.userRole = decoded?.role;
+
+      next();
+    } catch (error: any) {
+      console.error("Token verification failed:", error.message);
       res.status(401).json({ error: "Invalid or expired token" });
-      return;
     }
-
-    res.locals.userId = decoded.userId;
-    res.locals.userEmail = decoded.userEmail;
-    res.locals.userRole = decoded.userRole;
-
-    next();
   }
 
   public static requireRole(...allowedRoles: UserRole[]) {

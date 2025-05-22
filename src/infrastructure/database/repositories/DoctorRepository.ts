@@ -19,8 +19,7 @@ export class DoctorRepository implements IDoctorRepository {
     const doctorData = result[0];
     return new Doctor(
       doctorData.id,
-      doctorData.first_name,
-      doctorData.last_name,
+      doctorData.username,
       doctorData.email,
       doctorData.phone_number,
       doctorData.specialization,
@@ -36,8 +35,7 @@ export class DoctorRepository implements IDoctorRepository {
       (doctorData) =>
         new Doctor(
           doctorData.id,
-          doctorData.first_name,
-          doctorData.last_name,
+          doctorData.username,
           doctorData.email,
           doctorData.phone_number,
           doctorData.specialization,
@@ -52,34 +50,20 @@ export class DoctorRepository implements IDoctorRepository {
     const result = await this.dbConnection.query<any>(
       `INSERT INTO doctors (first_name, last_name, email, phone_number, specialization, created_at, updated_at) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [doctor.firstName, doctor.lastName, doctor.email, doctor.phoneNumber, doctor.specialization, now, now]
+      [doctor.username, , doctor.email, doctor.phoneNumber, doctor.specialization, now, now]
     );
 
     const id = result.insertId;
-    return new Doctor(
-      id,
-      doctor.firstName,
-      doctor.lastName,
-      doctor.email,
-      doctor.phoneNumber,
-      doctor.specialization,
-      now,
-      now
-    );
+    return new Doctor(id, doctor.username, doctor.email, doctor.phoneNumber, doctor.specialization, now, now);
   }
 
   async update(id: number, doctor: Partial<Doctor>): Promise<boolean> {
     const updateFields: string[] = [];
     const params: any[] = [];
 
-    if (doctor.firstName !== undefined) {
-      updateFields.push("first_name = ?");
-      params.push(doctor.firstName);
-    }
-
-    if (doctor.lastName !== undefined) {
+    if (doctor.username !== undefined) {
       updateFields.push("last_name = ?");
-      params.push(doctor.lastName);
+      params.push(doctor.username);
     }
 
     if (doctor.email !== undefined) {
@@ -125,8 +109,7 @@ export class DoctorRepository implements IDoctorRepository {
       (doctorData) =>
         new Doctor(
           doctorData.id,
-          doctorData.first_name,
-          doctorData.last_name,
+          doctorData.username,
           doctorData.email,
           doctorData.phone_number,
           doctorData.specialization,
@@ -146,8 +129,7 @@ export class DoctorRepository implements IDoctorRepository {
     const doctorData = result[0];
     return new Doctor(
       doctorData.id,
-      doctorData.first_name,
-      doctorData.last_name,
+      doctorData.username,
       doctorData.email,
       doctorData.phone_number,
       doctorData.specialization,

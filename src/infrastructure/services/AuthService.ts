@@ -2,13 +2,13 @@ import { LoginRequest, RegisterRequest } from "../../core/dto/auth.dto";
 import { User } from "../../core/entities/User";
 import { BadRequestError, ConflictError, NotFoundError, UnauthorizedError } from "../../utils/errors/Errors";
 import { signAccessToken, signRefreshToken, verifyToken } from "../../utils/jwt";
-import { AuthRepository } from "../database/repositories/AuthRepository";
+import { UserRepository } from "../database/repositories/UserRepository";
 import bcrypt from "bcrypt";
 
 export class AuthService {
-  private authRepo: AuthRepository;
+  private authRepo: UserRepository;
 
-  constructor(authRepo: AuthRepository) {
+  constructor(authRepo: UserRepository) {
     this.authRepo = authRepo;
   }
 
@@ -21,8 +21,8 @@ export class AuthService {
     const passwordMatch = await bcrypt.compare(password, user.password as string);
     if (!passwordMatch) throw new UnauthorizedError("Invalid password", "INVALID_PASSWORD");
 
-    const accessToken = signAccessToken({ id: user.id, email: user.email });
-    const refreshToken = signRefreshToken({ id: user.id, email: user.email });
+    const accessToken = signAccessToken({ id: user.id.toString(), email: user.email, role: user.role });
+    const refreshToken = signRefreshToken({ id: user.id.toString(), email: user.email, role: user.role });
 
     return { user: user.toSafeObject(), accessToken, refreshToken };
   }
@@ -44,8 +44,8 @@ export class AuthService {
 
     if (!newUser) throw new BadRequestError("User could not be created", "USER_CREATION_FAILED");
 
-    const accessToken = signAccessToken({ id: newUser.id, email: newUser.email });
-    const refreshToken = signRefreshToken({ id: newUser.id, email: newUser.email });
+    const accessToken = signAccessToken({ id: newUser.id.toString(), email: newUser.email, role: newUser.role });
+    const refreshToken = signRefreshToken({ id: newUser.id.toString(), email: newUser.email, role: newUser.role });
 
     return { user: newUser, accessToken, refreshToken };
   }
@@ -55,11 +55,11 @@ export class AuthService {
 
     if (!decoded) throw new UnauthorizedError("Invalid or expired refresh token", "INVALID_REFRESH_TOKEN");
 
-    const user = await this.authRepo.findByEmail(decoded.userEmail);
+    const user = await this.authRepo.findByEmail(decoded.email);
     if (!user) throw new NotFoundError("User not found", "USER_NOT_FOUND");
 
-    const newAccessToken = signAccessToken({ id: user.id, email: user.email });
-    const newRefreshToken = signRefreshToken({ id: user.id, email: user.email });
+    const newAccessToken = signAccessToken({ id: user.id.toString(), email: user.email, role: user.role });
+    const newRefreshToken = signRefreshToken({ id: user.id.toString(), email: user.email, role: user.role });
 
     return { accessToken: newAccessToken, refreshToken: newRefreshToken };
   }

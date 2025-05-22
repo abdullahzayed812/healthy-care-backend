@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 
-type Validator<T> = (input: any) => input is T;
+type Validator<T> = (input: any) => true | { error: string; expected: Partial<T> };
 
 interface ValidationSchema {
   body?: Validator<any>;
@@ -24,24 +24,36 @@ class RequestValidator {
       const errors: string[] = [];
 
       if (schema.body) {
-        if (!schema.body(req.body)) {
-          errors.push("Invalid body structure");
-        } else {
-          const missing = this.getMissingKeys(req.body);
-          if (missing.length > 0) {
-            errors.push(`Missing or empty body fields: ${missing.join(", ")}`);
-          }
+        const result = schema.body(req.body);
+        if (result !== true) {
+          errors.push(result.error);
+          res.status(400).json({
+            error: result.error,
+            expected: result.expected,
+          });
+          return;
+        }
+
+        const missing = this.getMissingKeys(req.body);
+        if (missing.length > 0) {
+          errors.push(`Missing or empty body fields: ${missing.join(", ")}`);
         }
       }
 
       if (schema.params) {
-        if (!schema.params(req.params)) {
-          errors.push("Invalid params structure");
-        } else {
-          const missing = this.getMissingKeys(req.params);
-          if (missing.length > 0) {
-            errors.push(`Missing or empty URL query params: ${missing.join(", ")}`);
-          }
+        const result = schema.params(req.params);
+        if (result !== true) {
+          errors.push(result.error);
+          res.status(400).json({
+            error: result.error,
+            expected: result.expected,
+          });
+          return;
+        }
+
+        const missing = this.getMissingKeys(req.params);
+        if (missing.length > 0) {
+          errors.push(`Missing or empty URL query params: ${missing.join(", ")}`);
         }
       }
 
