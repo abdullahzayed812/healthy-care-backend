@@ -5,7 +5,7 @@ import { CreateDoctorRequest, UpdateDoctorRequest } from "../../core/dto/doctor.
 export class DoctorService {
   constructor(private doctorRepo: IDoctorRepository) {}
 
-  async getAllDoctors(): Promise<Doctor[]> {
+  async getAllDoctors(): Promise<Doctor[] | null> {
     return this.doctorRepo.findAll();
   }
 
@@ -13,8 +13,8 @@ export class DoctorService {
     return this.doctorRepo.findById(id);
   }
 
-  async createDoctor(data: CreateDoctorRequest): Promise<Doctor> {
-    return this.doctorRepo.create(data as Omit<Doctor, "id">);
+  async createDoctor(data: Doctor): Promise<Doctor | null> {
+    return this.doctorRepo.create(data);
   }
 
   async updateDoctor(id: number, data: UpdateDoctorRequest): Promise<boolean> {

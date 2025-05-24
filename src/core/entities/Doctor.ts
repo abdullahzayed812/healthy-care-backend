@@ -6,11 +6,10 @@ export class Doctor extends User {
     public email: string,
     public username: string,
     public phoneNumber: string,
-    public specialization: string,
-    public createdAt: Date = new Date(),
-    public updatedAt: Date = new Date()
+    public specialty: string,
+    public bio: string
   ) {
-    super(id, email, username, "doctor", undefined, phoneNumber, undefined, createdAt, updatedAt);
-    this.specialization = specialization;
+    super(id, email, username, "doctor");
+    this.specialty = specialty;
   }
 }

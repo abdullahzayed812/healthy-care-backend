@@ -1,4 +1,5 @@
 import { Doctor } from "../entities/Doctor";
+import { ParamsDictionary } from "express-serve-static-core";
 
 // ---------- GET ALL ----------
 export interface GetAllDoctorsRequest {}
@@ -7,7 +8,7 @@ export interface GetAllDoctorsResponse {
 }
 
 // ---------- GET BY ID ----------
-export interface GetDoctorByIdParams {
+export interface GetDoctorByIdParams extends ParamsDictionary {
   id: string;
 }
 export interface GetDoctorByIdRequest {}
@@ -15,16 +16,16 @@ export interface GetDoctorByIdResponse extends Doctor {}
 
 // ---------- CREATE ----------
 export interface CreateDoctorRequest {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  specialization: string;
+  id: number;
+  specialty: string;
+  bio: string;
 }
-export interface CreateDoctorResponse extends Doctor {}
+export interface CreateDoctorResponse {
+  doctor: Doctor;
+}
 
 // ---------- UPDATE ----------
-export interface UpdateDoctorParams {
+export interface UpdateDoctorParams extends ParamsDictionary {
   id: string;
 }
 export interface UpdateDoctorRequest {
@@ -39,7 +40,7 @@ export interface UpdateDoctorResponse {
 }
 
 // ---------- DELETE ----------
-export interface DeleteDoctorParams {
+export interface DeleteDoctorParams extends ParamsDictionary {
   id: string;
 }
 export interface DeleteDoctorRequest {}

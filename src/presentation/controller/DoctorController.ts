@@ -15,6 +15,8 @@ import {
   UpdateDoctorRequest,
   UpdateDoctorResponse,
 } from "../../core/dto/doctor.dto";
+import { handleErrorResponse } from "../../utils/errors/errorResponse";
+import { Doctor } from "../../core/entities/Doctor";
 
 export class DoctorController {
   constructor(private doctorService: DoctorService) {}
@@ -22,10 +24,16 @@ export class DoctorController {
   getAll: ExpressHandler<GetAllDoctorsRequest, GetAllDoctorsResponse> = async (req, res) => {
     try {
       const doctors = await this.doctorService.getAllDoctors();
+
+      if (!doctors) {
+        res.status(404).json({ error: "Can't found doctors..." });
+        return;
+      }
+
       res.status(200).json({ doctors });
+      return;
     } catch (error) {
-      console.error("Error fetching doctors:", error);
-      res.status(500).json({ error: "Internal server error" });
+      handleErrorResponse(res, error);
     }
   };
 
@@ -41,18 +49,23 @@ export class DoctorController {
 
       res.status(200).json(doctor);
     } catch (error) {
-      console.error("Error fetching doctor:", error);
-      res.status(500).json({ error: "Internal server error" });
+      handleErrorResponse(res, error);
     }
   };
 
   create: ExpressHandler<CreateDoctorRequest, CreateDoctorResponse> = async (req, res) => {
     try {
-      const doctor = await this.doctorService.createDoctor(req.body as CreateDoctorRequest);
-      res.status(201).json(doctor);
+      const doctor = await this.doctorService.createDoctor(req.body as Doctor);
+
+      if (!doctor) {
+        res.status(404).json({ error: "Doctor not created." });
+        return;
+      }
+
+      res.status(201).json({ doctor });
+      return;
     } catch (error: any) {
-      console.error("Error creating doctor:", error);
-      res.status(400).json({ error: "Invalid request", details: error.message });
+      handleErrorResponse(res, error);
     }
   };
 
@@ -68,8 +81,7 @@ export class DoctorController {
 
       res.status(200).json({ message: "Doctor updated successfully" });
     } catch (error) {
-      console.error("Error updating doctor:", error);
-      res.status(500).json({ error: "Internal server error" });
+      handleErrorResponse(res, error);
     }
   };
 
@@ -85,8 +97,7 @@ export class DoctorController {
 
       res.status(200).json({ message: "Doctor deleted successfully" });
     } catch (error) {
-      console.error("Error deleting doctor:", error);
-      res.status(500).json({ error: "Internal server error" });
+      handleErrorResponse(res, error);
     }
   };
 }

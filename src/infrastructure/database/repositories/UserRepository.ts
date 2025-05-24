@@ -1,3 +1,4 @@
+import { RegisterRequest, RegisterResponse } from "../../../core/dto/auth.dto";
 import { User } from "../../../core/entities/User";
 import { IUserRepository } from "../../../core/interfaces/repositories/IUserRepository";
 import { DatabaseError } from "../../../utils/errors/DatabaseErrors";
@@ -34,16 +35,14 @@ export class UserRepository implements IUserRepository {
   findAll(): Promise<User[]> {
     throw new Error("Method not implemented.");
   }
-  create(entity: Partial<User>): Promise<User> {
-    throw new Error("Method not implemented.");
-  }
 
-  // Register a new user
-  async createUser(user: Omit<User, "id">): Promise<User | null> {
+  public async create(data: RegisterRequest): Promise<User | null> {
+    const { email, password, username, role, specialty, bio, dateOfBirth, gender } = data;
+
     try {
       const result = await this.dbConnection.query<any>(
         `INSERT INTO users (email, password, username, role) VALUES (?, ?, ?, ?)`,
-        [user.email, user.password, user.username, user.role]
+        [email, password, username, role]
       );
 
       if (!result.insertId) {
@@ -51,9 +50,22 @@ export class UserRepository implements IUserRepository {
       }
 
       const id = result.insertId;
-      await this.dbConnection.query<any>("INSERT INTO doctors (id) VALUES (?)", [id]);
 
-      return new User(id, user.email, user.username, user.role);
+      if (role === "doctor") {
+        await this.dbConnection.query<any>("INSERT INTO doctors (id, specialty, bio) VALUES (?, ?, ?)", [
+          id,
+          specialty,
+          bio,
+        ]);
+      } else if (role === "patient") {
+        await this.dbConnection.query<any>("INSERT INTO patient (id, date_of_birth, gender) VALUES (?, ?, ?)", [
+          id,
+          dateOfBirth,
+          gender,
+        ]);
+      }
+
+      return new User(id, email, username, role);
     } catch (error) {
       console.error("Error creating user:", error);
       throw new DatabaseError("Failed to create user", "CREATE_USER_DB_ERROR");

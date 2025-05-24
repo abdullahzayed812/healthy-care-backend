@@ -6,16 +6,16 @@ import { UserRepository } from "../database/repositories/UserRepository";
 import bcrypt from "bcrypt";
 
 export class AuthService {
-  private authRepo: UserRepository;
+  private userRepo: UserRepository;
 
   constructor(authRepo: UserRepository) {
-    this.authRepo = authRepo;
+    this.userRepo = authRepo;
   }
 
   async login(request: LoginRequest): Promise<{ user: User; accessToken: string; refreshToken: string }> {
     const { email, password } = request;
 
-    const user = await this.authRepo.findByEmail(email);
+    const user = await this.userRepo.findByEmail(email);
     if (!user) throw new NotFoundError("User not found", "USER_NOT_FOUND");
 
     const passwordMatch = await bcrypt.compare(password, user.password as string);
@@ -28,19 +28,23 @@ export class AuthService {
   }
 
   async register(request: RegisterRequest): Promise<{ user: User; accessToken: string; refreshToken: string }> {
-    const { email, password, username, role } = request;
+    const { email, password, username, role, specialty, bio, dateOfBirth, gender } = request;
 
-    const existingUser = await this.authRepo.findByEmail(email);
+    const existingUser = await this.userRepo.findByEmail(email);
     if (existingUser) throw new ConflictError("User already exists", "USER_EXISTS");
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await this.authRepo.createUser({
+    const newUser = await this.userRepo.create({
       email,
       password: hashedPassword,
       username,
       role,
-    } as Omit<User, "id">);
+      specialty,
+      bio,
+      dateOfBirth,
+      gender,
+    });
 
     if (!newUser) throw new BadRequestError("User could not be created", "USER_CREATION_FAILED");
 
@@ -55,7 +59,7 @@ export class AuthService {
 
     if (!decoded) throw new UnauthorizedError("Invalid or expired refresh token", "INVALID_REFRESH_TOKEN");
 
-    const user = await this.authRepo.findByEmail(decoded.email);
+    const user = await this.userRepo.findByEmail(decoded.email);
     if (!user) throw new NotFoundError("User not found", "USER_NOT_FOUND");
 
     const newAccessToken = signAccessToken({ id: user.id.toString(), email: user.email, role: user.role });

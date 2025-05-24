@@ -1,5 +1,7 @@
 import { User, UserRole } from "../entities/User";
 
+export type GenderType = "male" | "female" | "child";
+
 export interface LoginRequest {
   email: string;
   password: string;
@@ -15,6 +17,10 @@ export interface RegisterRequest {
   password: string;
   username: string;
   role: UserRole;
+  specialty?: string;
+  bio?: string;
+  dateOfBirth?: string;
+  gender?: GenderType;
 }
 
 export interface RegisterResponse {

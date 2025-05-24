@@ -1,0 +1,21 @@
+| Specialty                         | Description                                            |
+| --------------------------------- | ------------------------------------------------------ |
+| **Cardiologist**                  | Heart and blood vessel specialist                      |
+| **Dermatologist**                 | Skin, hair, and nail specialist                        |
+| **Pediatrician**                  | Child and adolescent specialist                        |
+| **Psychiatrist**                  | Mental health and behavioral disorders                 |
+| **Neurologist**                   | Brain and nervous system specialist                    |
+| **Orthopedic Surgeon**            | Bones, joints, muscles, and ligaments                  |
+| **Gynecologist**                  | Female reproductive system specialist                  |
+| **Oncologist**                    | Cancer diagnosis and treatment                         |
+| **Ophthalmologist**               | Eye and vision care specialist                         |
+| **ENT Specialist**                | Ear, nose, and throat (Otorhinolaryngologist)          |
+| **General Practitioner**          | Primary care for common illnesses and prevention       |
+| **Endocrinologist**               | Hormonal disorders, such as diabetes or thyroid issues |
+| **Gastroenterologist**            | Digestive system (stomach, liver, intestines)          |
+| **Nephrologist**                  | Kidney specialist                                      |
+| **Pulmonologist**                 | Lungs and respiratory system                           |
+| **Rheumatologist**                | Joints, autoimmune diseases (e.g., arthritis)          |
+| **Urologist**                     | Urinary tract and male reproductive organs             |
+| **Hematologist**                  | Blood and blood disorders                              |
+| **Infectious Disease Specialist** | Diagnosis and treatment of infections                  |

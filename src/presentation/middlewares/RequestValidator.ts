@@ -68,7 +68,7 @@ class RequestValidator {
 
   private getMissingKeys(obj: any): string[] {
     if (!obj || typeof obj !== "object") return [];
-    return Object.keys(obj).filter((key) => obj[key] === undefined || obj[key] === null || obj[key] === "");
+    return Object.keys(obj).filter((key) => obj[key] === undefined || obj[key] === null);
   }
 }
 
