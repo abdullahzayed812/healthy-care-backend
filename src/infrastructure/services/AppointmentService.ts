@@ -5,7 +5,7 @@ import { CreateAppointmentRequest, UpdateAppointmentRequest } from "../../core/d
 export class AppointmentService {
   constructor(private appointmentRepo: IAppointmentRepository) {}
 
-  async getAll(): Promise<Appointment[]> {
+  async getAll(): Promise<Appointment[] | null> {
     return this.appointmentRepo.findAll();
   }
 
@@ -13,7 +13,15 @@ export class AppointmentService {
     return this.appointmentRepo.findById(id);
   }
 
-  async create(data: CreateAppointmentRequest): Promise<Appointment> {
+  async findByDoctorId(doctorId: number): Promise<Appointment[] | null> {
+    return this.appointmentRepo.findByDoctorId(doctorId);
+  }
+
+  async findByPatientId(patientId: number): Promise<Appointment[] | null> {
+    return this.appointmentRepo.findByPatientId(patientId);
+  }
+
+  async create(data: CreateAppointmentRequest): Promise<Appointment | null> {
     return this.appointmentRepo.create(data);
   }
 
@@ -23,13 +31,5 @@ export class AppointmentService {
 
   async delete(id: number): Promise<boolean> {
     return this.appointmentRepo.delete(id);
-  }
-
-  async findByDoctorId(doctorId: number): Promise<Appointment[]> {
-    return this.appointmentRepo.findByDoctorId(doctorId);
-  }
-
-  async findByPatientId(patientId: number): Promise<Appointment[]> {
-    return this.appointmentRepo.findByPatientId(patientId);
   }
 }

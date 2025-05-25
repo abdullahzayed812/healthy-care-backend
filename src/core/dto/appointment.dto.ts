@@ -1,4 +1,4 @@
-import { Appointment } from "../entities/Appointment";
+import { Appointment, AppointmentStatus } from "../entities/Appointment";
 import { ParamsDictionary } from "express-serve-static-core";
 
 // ---------- GET ALL ----------
@@ -18,8 +18,11 @@ export interface GetAppointmentByIdResponse extends Appointment {}
 export interface CreateAppointmentRequest {
   doctorId: number;
   patientId: number;
-  date: string;
+  startTime: string;
+  endTime: string;
+  dayOfWeek: string;
   reason: string;
+  status: AppointmentStatus;
 }
 export interface CreateAppointmentResponse extends Appointment {}
 

@@ -1,118 +1,185 @@
 import { Appointment } from "../../../core/entities/Appointment";
 import { IAppointmentRepository } from "../../../core/interfaces/repositories/IAppointmentRepository";
+import { DatabaseError } from "../../../utils/errors/DatabaseErrors";
 import { MySqlConnection } from "../connections/MySqlConnection";
 
 export class AppointmentRepository implements IAppointmentRepository {
   constructor(private db: MySqlConnection) {}
 
+  async findAll(): Promise<Appointment[] | null> {
+    try {
+      const result = await this.db.query<Appointment[]>("SELECT * FROM appointments");
+
+      if (!result.length) return null;
+
+      return result.map(
+        (appointment) =>
+          new Appointment(
+            appointment.id,
+            appointment.doctorId,
+            appointment.patientId,
+            appointment.startTime,
+            appointment.endTime,
+            appointment.dayOfWeek,
+            appointment.reason,
+            appointment.status,
+            appointment.createdAt,
+            appointment.updatedAt
+          )
+      );
+    } catch (error) {
+      console.error("Error find all appointment:", error);
+      throw new DatabaseError("Failed to find all appointment", "FIND_ALL_APPOINTMENT_DB_ERROR");
+    }
+  }
+
   async findById(id: number): Promise<Appointment | null> {
-    const result = await this.db.query<any[]>("SELECT * FROM appointments WHERE id = ?", [id]);
-    if (!result.length) return null;
-    const data = result[0];
-    return new Appointment(
-      data.id,
-      data.doctor_id,
-      data.patient_id,
-      data.date,
-      data.reason,
-      new Date(data.created_at),
-      new Date(data.updated_at)
-    );
+    try {
+      const result = await this.db.query<Appointment[]>("SELECT * FROM appointments WHERE id = ?", [id]);
+
+      if (!result.length) return null;
+
+      const appointment = result[0];
+
+      return new Appointment(
+        appointment.id,
+        appointment.doctorId,
+        appointment.patientId,
+        appointment.startTime,
+        appointment.endTime,
+        appointment.dayOfWeek,
+        appointment.reason,
+        appointment.status,
+        appointment.createdAt,
+        appointment.updatedAt
+      );
+    } catch (error) {
+      console.error("Error find appointment by id:", error);
+      throw new DatabaseError("Failed to find appointment by id", "FIND_APPOINTMENT_BY_ID_DB_ERROR");
+    }
   }
 
-  async findAll(): Promise<Appointment[]> {
-    const result = await this.db.query<any[]>("SELECT * FROM appointments");
-    return result.map(
-      (r) =>
-        new Appointment(
-          r.id,
-          r.doctor_id,
-          r.patient_id,
-          r.date,
-          r.reason,
-          new Date(r.created_at),
-          new Date(r.updated_at)
-        )
-    );
+  async findByDoctorId(doctorId: number): Promise<Appointment[] | null> {
+    try {
+      const result = await this.db.query<any[]>("SELECT * FROM appointments WHERE doctor_id = ?", [doctorId]);
+
+      if (!result.length) return null;
+
+      return result.map(
+        (appointment) =>
+          new Appointment(
+            appointment.id,
+            appointment.doctor_id,
+            appointment.patient_id,
+            appointment.startTime,
+            appointment.endTime,
+            appointment.dayOfWeek,
+            appointment.reason,
+            appointment.status
+          )
+      );
+    } catch (error) {
+      console.error("Error find appointment by doctor id:", error);
+      throw new DatabaseError("Failed to find appointment by doctor id", "FIND_APPOINTMENT_BY_DOCTOR_ID_DB_ERROR");
+    }
   }
 
-  async create(appointment: Omit<Appointment, "id" | "createdAt" | "updatedAt">): Promise<Appointment> {
-    const result = await this.db.query<any>(
-      `INSERT INTO appointments (doctor_id, patient_id, date, reason) VALUES (?, ?, ?, ?, ?, ?)`,
-      [appointment.doctorId, appointment.patientId, appointment.date, appointment.reason]
-    );
-    return new Appointment(
-      result.insertId,
-      appointment.doctorId,
-      appointment.patientId,
-      appointment.date,
-      appointment.reason
-    );
+  async findByPatientId(patientId: number): Promise<Appointment[] | null> {
+    try {
+      const result = await this.db.query<any[]>("SELECT * FROM appointments WHERE patient_id = ?", [patientId]);
+
+      if (!result.length) return null;
+
+      return result.map(
+        (appointment) =>
+          new Appointment(
+            appointment.id,
+            appointment.doctor_id,
+            appointment.patient_id,
+            appointment.startTime,
+            appointment.endTime,
+            appointment.dayOfWeek,
+            appointment.reason,
+            appointment.status
+          )
+      );
+    } catch (error) {
+      console.error("Error find appointment by patient id:", error);
+      throw new DatabaseError("Failed to find appointment by patient id", "FIND_APPOINTMENT_BY_PATIENT_ID_DB_ERROR");
+    }
   }
 
-  async update(id: number, partial: Partial<Appointment>): Promise<boolean> {
+  async create(appointment: Omit<Appointment, "id" | "createdAt" | "updatedAt">): Promise<Appointment | null> {
+    try {
+      const result = await this.db.query<any>(
+        `INSERT INTO appointments (doctor_id, patient_id, start_time, end_time, day_of_week, reason, status) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [
+          appointment.doctorId,
+          appointment.patientId,
+          appointment.startTime,
+          appointment.endTime,
+          appointment.dayOfWeek,
+          appointment.reason,
+          appointment.status,
+        ]
+      );
+
+      const id = result.insertId;
+
+      if (!id) return null;
+
+      return new Appointment(
+        id,
+        appointment.doctorId,
+        appointment.patientId,
+        appointment.startTime,
+        appointment.endTime,
+        appointment.dayOfWeek,
+        appointment.reason,
+        appointment.status
+      );
+    } catch (error) {
+      console.error("Error create appointment:", error);
+      throw new DatabaseError("Failed to create appointment", "CREATE_APPOINTMENT_DB_ERROR");
+    }
+  }
+
+  async update(id: number, data: Partial<Appointment>): Promise<boolean> {
     const fields = [];
     const params: any[] = [];
 
-    if (partial.doctorId !== undefined) {
+    if (data.doctorId !== undefined) {
       fields.push("doctor_id = ?");
-      params.push(partial.doctorId);
+      params.push(data.doctorId);
     }
-    if (partial.patientId !== undefined) {
+    if (data.patientId !== undefined) {
       fields.push("patient_id = ?");
-      params.push(partial.patientId);
+      params.push(data.patientId);
     }
-    if (partial.date !== undefined) {
+    if (data.dayOfWeek !== undefined) {
       fields.push("date = ?");
-      params.push(partial.date);
+      params.push(data.dayOfWeek);
     }
-    if (partial.reason !== undefined) {
+    if (data.reason !== undefined) {
       fields.push("reason = ?");
-      params.push(partial.reason);
+      params.push(data.reason);
     }
 
     fields.push("updated_at = ?");
     params.push(new Date());
     params.push(id);
 
-    const result = await this.db.query<any>(`UPDATE appointments SET ${fields.join(", ")} WHERE id = ?`, params);
-    return result.affectedRows > 0;
+    try {
+      const result = await this.db.query<any>(`UPDATE appointments SET ${fields.join(", ")} WHERE id = ?`, params);
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error("Error update appointment:", error);
+      throw new DatabaseError("Failed to update appointment", "UPDATE_APPOINTMENT_DB_ERROR");
+    }
   }
 
   async delete(id: number): Promise<boolean> {
     const result = await this.db.query<any>("DELETE FROM appointments WHERE id = ?", [id]);
     return result.affectedRows > 0;
-  }
-
-  async findByDoctorId(doctorId: number): Promise<Appointment[]> {
-    const result = await this.db.query<any[]>("SELECT * FROM appointments WHERE doctor_id = ?", [doctorId]);
-    return result.map(
-      (r) =>
-        new Appointment(
-          r.id,
-          r.doctor_id,
-          r.patient_id,
-          r.date,
-          r.reason,
-          new Date(r.created_at),
-          new Date(r.updated_at)
-        )
-    );
-  }
-
-  async findByPatientId(patientId: number): Promise<Appointment[]> {
-    const result = await this.db.query<any[]>("SELECT * FROM appointments WHERE patient_id = ?", [patientId]);
-    return result.map(
-      (r) =>
-        new Appointment(
-          r.id,
-          r.doctor_id,
-          r.patient_id,
-          r.date,
-          r.reason,
-          new Date(r.created_at),
-          new Date(r.updated_at)
-        )
-    );
   }
 }
