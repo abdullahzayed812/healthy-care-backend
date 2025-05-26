@@ -14,13 +14,31 @@ export interface GetAppointmentByIdParams extends ParamsDictionary {
 export interface GetAppointmentByIdRequest {}
 export interface GetAppointmentByIdResponse extends Appointment {}
 
+// ---------- GET BY DOCTOR ID ----------
+export interface GetAppointmentByDoctorIdParams extends ParamsDictionary {
+  id: string;
+}
+export interface GetAppointmentByDoctorIdRequest {}
+export interface GetAppointmentByDoctorIdResponse {
+  appointments: Appointment[];
+}
+
+// ---------- GET BY PATIENT ID ----------
+export interface GetAppointmentByPatientIdParams extends ParamsDictionary {
+  id: string;
+}
+export interface GetAppointmentByPatientIdRequest {}
+export interface GetAppointmentByPatientIdResponse {
+  appointments: Appointment[];
+}
+
 // ---------- CREATE ----------
 export interface CreateAppointmentRequest {
   doctorId: number;
   patientId: number;
   startTime: string;
   endTime: string;
-  dayOfWeek: string;
+  dayOfWeek: number;
   reason: string;
   status: AppointmentStatus;
 }
@@ -33,8 +51,11 @@ export interface UpdateAppointmentParams extends ParamsDictionary {
 export interface UpdateAppointmentRequest {
   doctorId?: number;
   patientId?: number;
-  date?: string;
+  startTime?: string;
+  endTime?: string;
+  dayOfWeek?: number;
   reason?: string;
+  status?: AppointmentStatus;
 }
 export interface UpdateAppointmentResponse {
   message: string;

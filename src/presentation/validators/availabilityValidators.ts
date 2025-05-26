@@ -55,6 +55,7 @@ export function isCreateAvailabilityRequest(
     dayOfWeek: 1,
     startTime: "09:00",
     endTime: "09:30",
+    available: true,
   };
 
   if (!isAvailability(body)) {

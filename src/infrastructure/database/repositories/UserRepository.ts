@@ -58,7 +58,7 @@ export class UserRepository implements IUserRepository {
           bio,
         ]);
       } else if (role === "patient") {
-        await this.dbConnection.query<any>("INSERT INTO patient (id, date_of_birth, gender) VALUES (?, ?, ?)", [
+        await this.dbConnection.query<any>("INSERT INTO patients (id, date_of_birth, gender) VALUES (?, ?, ?)", [
           id,
           dateOfBirth,
           gender,
