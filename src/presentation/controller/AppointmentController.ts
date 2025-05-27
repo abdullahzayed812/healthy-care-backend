@@ -23,6 +23,12 @@ export class AppointmentController {
   getAll: ExpressHandler<GetAllAppointmentsRequest, GetAllAppointmentsResponse> = async (req, res) => {
     try {
       const appointments = await this.service.getAll();
+
+      if (!appointments) {
+        res.status(404).json({ error: "Can't found appointments..." });
+        return;
+      }
+
       res.status(200).json({ appointments });
     } catch (err) {
       res.status(500).json({ error: "Internal server error" });
@@ -36,10 +42,12 @@ export class AppointmentController {
     try {
       const id = parseInt(req.params.id);
       const appointment = await this.service.getById(id);
+
       if (!appointment) {
         res.status(404).json({ error: "Appointment not found" });
         return;
       }
+
       res.status(200).json(appointment);
     } catch (err) {
       res.status(500).json({ error: "Internal server error" });
@@ -49,6 +57,12 @@ export class AppointmentController {
   create: ExpressHandler<CreateAppointmentRequest, CreateAppointmentResponse> = async (req, res) => {
     try {
       const appointment = await this.service.create(req.body as CreateAppointmentRequest);
+
+      if (!appointment) {
+        res.status(404).json({ error: "Can't create appointment." });
+        return;
+      }
+
       res.status(201).json(appointment);
     } catch (err: any) {
       res.status(400).json({ error: "Invalid request", details: err.message });
@@ -92,7 +106,14 @@ export class AppointmentController {
   getByDoctorId: ExpressHandler<{}, { appointments: Appointment[] }, { id: string }> = async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+
       const appointments = await this.service.findByDoctorId(id);
+
+      if (!appointments) {
+        res.status(404).json({ error: "Can't get appointment by doctor id." });
+        return;
+      }
+
       res.status(200).json({ appointments });
     } catch (error) {
       res.status(500).json({ error: "Internal server error" });
@@ -103,6 +124,12 @@ export class AppointmentController {
     try {
       const id = parseInt(req.params.id);
       const appointments = await this.service.findByPatientId(id);
+
+      if (!appointments) {
+        res.status(404).json({ error: "Can't get appointment by patient id." });
+        return;
+      }
+
       res.status(200).json({ appointments });
     } catch (error) {
       res.status(500).json({ error: "Internal server error" });

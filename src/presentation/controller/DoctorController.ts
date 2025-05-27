@@ -47,7 +47,7 @@ export class DoctorController {
         return;
       }
 
-      res.status(200).json(doctor);
+      res.status(200).json({ doctor });
     } catch (error) {
       handleErrorResponse(res, error);
     }

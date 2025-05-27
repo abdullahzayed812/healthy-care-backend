@@ -12,7 +12,9 @@ export interface GetDoctorByIdParams extends ParamsDictionary {
   id: string;
 }
 export interface GetDoctorByIdRequest {}
-export interface GetDoctorByIdResponse extends Doctor {}
+export interface GetDoctorByIdResponse {
+  doctor: Doctor;
+}
 
 // ---------- CREATE ----------
 export interface CreateDoctorRequest {

@@ -15,12 +15,14 @@ export class DoctorRepository implements IDoctorRepository {
       const result = await this.dbConnection.query<Doctor[]>(
         `
         SELECT 
-          users.id
-          users.name,
+          users.id,
+          users.username,
           users.email,
           users.phone_number,
           doctors.specialty,
-          doctors.bio
+          doctors.bio,
+          doctors.experience,
+          doctors.reviews
         FROM doctors
         JOIN users ON doctors.id = users.id
         WHERE doctors.id = ?
@@ -45,15 +47,17 @@ export class DoctorRepository implements IDoctorRepository {
     try {
       const result = await this.dbConnection.query<any[]>(
         `
-        SELECT 
-          users.id
-          users.name,
-          users.email,
-          users.phone_number,
-          doctors.specialty,
-          doctors.bio
-        FROM doctors
-        JOIN users ON doctors.id = users.id
+          SELECT 
+            users.id,
+            users.username,
+            users.email,
+            users.phone_number,
+            doctors.specialty,
+            doctors.bio,
+            doctors.experience,
+            doctors.reviews
+          FROM doctors
+          JOIN users ON doctors.id = users.id
         `
       );
 
@@ -63,7 +67,17 @@ export class DoctorRepository implements IDoctorRepository {
 
       return result.map(
         (doctor) =>
-          new Doctor(doctor.id, doctor.email, doctor.username, doctor.phoneNumber, doctor.specialty, doctor.bio)
+          new Doctor(
+            doctor.id,
+            doctor.email,
+            doctor.username,
+            doctor.phone_number,
+            doctor.specialty,
+            doctor.bio,
+            undefined,
+            doctor.experience,
+            doctor.reviews
+          )
       );
     } catch (error) {
       console.error("Error find all doctors:", error);

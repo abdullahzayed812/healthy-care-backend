@@ -7,10 +7,10 @@ export class User {
     public username: string,
     public role: UserRole,
     public password?: string,
-    public phone?: string,
+    public phoneNumber?: string,
     public address?: string,
-    public createdAt: Date = new Date(),
-    public updatedAt: Date = new Date()
+    public createdAt?: string,
+    public updatedAt?: string
   ) {}
 
   get fullName(): string {

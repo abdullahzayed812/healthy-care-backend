@@ -7,9 +7,12 @@ export class Doctor extends User {
     public username: string,
     public phoneNumber: string,
     public specialty: string,
-    public bio: string
+    public bio: string,
+    public nextAvailable?: string,
+    public experience?: number,
+    public reviews?: number
   ) {
-    super(id, email, username, "doctor");
+    super(id, email, username, "doctor", undefined, phoneNumber);
     this.specialty = specialty;
   }
 }
