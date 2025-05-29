@@ -8,7 +8,7 @@ export class AppointmentRepository implements IAppointmentRepository {
 
   async findAll(): Promise<Appointment[] | null> {
     try {
-      const result = await this.db.query<Appointment[]>("SELECT * FROM appointments");
+      const result = await this.db.query<any[]>("SELECT * FROM appointments");
 
       if (!result.length) return null;
 
@@ -16,15 +16,15 @@ export class AppointmentRepository implements IAppointmentRepository {
         (appointment) =>
           new Appointment(
             appointment.id,
-            appointment.doctorId,
-            appointment.patientId,
-            appointment.startTime,
-            appointment.endTime,
-            appointment.dayOfWeek,
+            appointment.doctor_id,
+            appointment.patient_id,
+            appointment.day_of_week,
+            appointment.start_time,
+            appointment.end_time,
             appointment.reason,
             appointment.status,
-            appointment.createdAt,
-            appointment.updatedAt
+            appointment.created_at,
+            appointment.updated_at
           )
       );
     } catch (error) {
@@ -35,7 +35,7 @@ export class AppointmentRepository implements IAppointmentRepository {
 
   async findById(id: number): Promise<Appointment | null> {
     try {
-      const result = await this.db.query<Appointment[]>("SELECT * FROM appointments WHERE id = ?", [id]);
+      const result = await this.db.query<any[]>("SELECT * FROM appointments WHERE id = ?", [id]);
 
       if (!result.length) return null;
 
@@ -43,15 +43,15 @@ export class AppointmentRepository implements IAppointmentRepository {
 
       return new Appointment(
         appointment.id,
-        appointment.doctorId,
-        appointment.patientId,
-        appointment.startTime,
-        appointment.endTime,
-        appointment.dayOfWeek,
+        appointment.doctor_id,
+        appointment.patient_id,
+        appointment.day_of_week,
+        appointment.start_time,
+        appointment.end_time,
         appointment.reason,
         appointment.status,
-        appointment.createdAt,
-        appointment.updatedAt
+        appointment.created_at,
+        appointment.updated_at
       );
     } catch (error) {
       console.error("Error find appointment by id:", error);
@@ -71,11 +71,13 @@ export class AppointmentRepository implements IAppointmentRepository {
             appointment.id,
             appointment.doctor_id,
             appointment.patient_id,
-            appointment.startTime,
-            appointment.endTime,
-            appointment.dayOfWeek,
+            appointment.day_of_week,
+            appointment.start_time,
+            appointment.end_time,
             appointment.reason,
-            appointment.status
+            appointment.status,
+            appointment.created_at,
+            appointment.updated_at
           )
       );
     } catch (error) {
@@ -96,11 +98,13 @@ export class AppointmentRepository implements IAppointmentRepository {
             appointment.id,
             appointment.doctor_id,
             appointment.patient_id,
-            appointment.startTime,
-            appointment.endTime,
-            appointment.dayOfWeek,
+            appointment.day_of_week,
+            appointment.start_time,
+            appointment.end_time,
             appointment.reason,
-            appointment.status
+            appointment.status,
+            appointment.created_at,
+            appointment.updated_at
           )
       );
     } catch (error) {
@@ -110,34 +114,64 @@ export class AppointmentRepository implements IAppointmentRepository {
   }
 
   async create(appointment: Omit<Appointment, "id" | "createdAt" | "updatedAt">): Promise<Appointment | null> {
+    const { doctorId, patientId, reason, dayOfWeek, startTime, endTime, status } = appointment;
+
     try {
-      const result = await this.db.query<any>(
-        `INSERT INTO appointments (doctor_id, patient_id, start_time, end_time, day_of_week, reason, status) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [
+      return this.db.transaction(async (connection) => {
+        // Check availability
+        const availabilityRows = await connection.query(
+          `
+          SELECT * FROM availabilities
+          WHERE doctor_id = ? AND day_of_week = ? AND available = TRUE
+          AND start_time <= ? AND end_time >= ?`,
+          [doctorId, dayOfWeek, startTime, endTime]
+        );
+
+        if ((availabilityRows as any[]).length === 0) {
+          throw new DatabaseError("Doctor is not available at the requested time", "CREATE_APPOINTMENT_DB_ERROR");
+        }
+
+        // Check for overlapping appointment
+        const appointmentRows = await connection.query(
+          `
+          SELECT * FROM appointments
+          WHERE doctor_id = ? AND day_of_week = ?
+          AND NOT (end_time <= ? OR start_time >= ?)`,
+          [doctorId, dayOfWeek, startTime, endTime]
+        );
+
+        if ((appointmentRows as any[]).length > 0) {
+          throw new DatabaseError("This time slot is already booked", "CREATE_APPOINTMENT_DB_ERROR");
+        }
+
+        // Insert new appointment
+        await connection.query(
+          `
+          INSERT INTO appointments (doctor_id, patient_id, reason, day_of_week, start_time, end_time)
+          VALUES (?, ?, ?, ?, ?, ?)`,
+          [doctorId, patientId, reason, dayOfWeek, startTime, endTime]
+        );
+
+        const [result] = await connection.query<any>(
+          `INSERT INTO appointments (doctor_id, patient_id, start_time, end_time, day_of_week, reason, status) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [doctorId, patientId, startTime, endTime, dayOfWeek, reason, status]
+        );
+
+        const id = result.insertId;
+
+        if (!id) return null;
+
+        return new Appointment(
+          id,
           appointment.doctorId,
           appointment.patientId,
+          appointment.dayOfWeek,
           appointment.startTime,
           appointment.endTime,
-          appointment.dayOfWeek,
           appointment.reason,
-          appointment.status,
-        ]
-      );
-
-      const id = result.insertId;
-
-      if (!id) return null;
-
-      return new Appointment(
-        id,
-        appointment.doctorId,
-        appointment.patientId,
-        appointment.startTime,
-        appointment.endTime,
-        appointment.dayOfWeek,
-        appointment.reason,
-        appointment.status
-      );
+          appointment.status
+        );
+      });
     } catch (error) {
       console.error("Error create appointment:", error);
       throw new DatabaseError("Failed to create appointment", "CREATE_APPOINTMENT_DB_ERROR");

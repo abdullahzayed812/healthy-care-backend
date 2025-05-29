@@ -63,9 +63,10 @@ export class AvailabilityRepository implements IAvailabilityRepository {
   async create(data: CreateAvailabilityRequest): Promise<Availability> {
     const result = await this.db.query<any>(
       `INSERT INTO availabilities (doctor_id, day_of_week, start_time, end_time, available)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [data.doctorId, data.dayOfWeek, data.startTime, data.endTime]
+       VALUES (?, ?, ?, ?, ?)`,
+      [data.doctorId, data.dayOfWeek, data.startTime, data.endTime, data.available]
     );
+
     return new Availability(
       result.insertId,
       data.doctorId,
@@ -96,7 +97,7 @@ export class AvailabilityRepository implements IAvailabilityRepository {
         values.push(item.id, doctorId, item.dayOfWeek, item.startTime, item.endTime, item.available);
       });
 
-      const [result]: any = await conn.execute(
+      await conn.execute(
         `INSERT INTO availabilities 
           (id, doctor_id, day_of_week, start_time, end_time, available)
          VALUES ${placeholders.join(", ")}`,

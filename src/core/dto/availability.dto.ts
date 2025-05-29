@@ -18,6 +18,7 @@ export interface GetAvailabilityByDoctorIdParams {
 
 export interface CreateAvailabilityRequest {
   doctorId: number;
+  dayOfMonth: number;
   dayOfWeek: number;
   startTime: string;
   endTime: string;
