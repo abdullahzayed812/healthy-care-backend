@@ -11,7 +11,7 @@ import { Availability } from "../../core/entities/Availability";
 export function isAvailability(item: any): item is Availability {
   return (
     typeof item === "object" &&
-    // typeof item.doctorId === "string" &&
+    typeof item.doctorId === "string" &&
     typeof item.dayOfWeek === "number" &&
     typeof item.startTime === "string" &&
     typeof item.endTime === "string"
@@ -52,13 +52,10 @@ export function isCreateAvailabilityRequest(
 ): true | { error: string; expected: CreateAvailabilityRequest } {
   const expected: CreateAvailabilityRequest = {
     doctorId: 123,
-    dayOfWeek: 1,
-    startTime: "09:00",
-    endTime: "09:30",
-    available: true,
+    slots: [{ doctorId: 1, startTime: "12:30", endTime: "01:00", available: true }],
   };
 
-  if (!isAvailability(body)) {
+  if (typeof body !== "object" || typeof body.doctorId !== "number" || !Array.isArray(body.slots)) {
     return {
       error: "Invalid body structure for CreateAvailabilityRequest.",
       expected,

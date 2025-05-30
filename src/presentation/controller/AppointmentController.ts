@@ -16,6 +16,7 @@ import {
   UpdateAppointmentResponse,
 } from "../../core/dto/appointment.dto";
 import { Appointment } from "../../core/entities/Appointment";
+import { handleErrorResponse } from "../../utils/errors/errorResponse";
 
 export class AppointmentController {
   constructor(private service: AppointmentService) {}
@@ -31,6 +32,7 @@ export class AppointmentController {
 
       res.status(200).json({ appointments });
     } catch (err) {
+      handleErrorResponse(res, err);
       res.status(500).json({ error: "Internal server error" });
     }
   };

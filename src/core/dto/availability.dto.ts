@@ -18,13 +18,13 @@ export interface GetAvailabilityByDoctorIdParams {
 
 export interface CreateAvailabilityRequest {
   doctorId: number;
-  dayOfMonth: number;
-  dayOfWeek: number;
-  startTime: string;
-  endTime: string;
-  available: boolean;
+  slots: Partial<Availability>[];
 }
-export interface CreateAvailabilityResponse extends Availability {}
+export interface CreateAvailabilityResponse {
+  success: boolean;
+  message: string;
+  insertedCount: number;
+}
 
 export interface CreateBulkAvailabilityRequest {
   doctorId: number;

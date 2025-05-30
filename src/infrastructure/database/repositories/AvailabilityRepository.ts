@@ -3,6 +3,7 @@ import { Availability } from "../../../core/entities/Availability";
 import { IAvailabilityRepository } from "../../../core/interfaces/repositories/IAvailabilityRepository";
 import {
   CreateAvailabilityRequest,
+  CreateAvailabilityResponse,
   CreateBulkAvailabilityRequest,
   CreateBulkAvailabilityResponse,
 } from "../../../core/dto/availability.dto";
@@ -60,21 +61,55 @@ export class AvailabilityRepository implements IAvailabilityRepository {
     );
   }
 
-  async create(data: CreateAvailabilityRequest): Promise<Availability> {
-    const result = await this.db.query<any>(
-      `INSERT INTO availabilities (doctor_id, day_of_week, start_time, end_time, available)
-       VALUES (?, ?, ?, ?, ?)`,
-      [data.doctorId, data.dayOfWeek, data.startTime, data.endTime, data.available]
-    );
+  async create(data: CreateBulkAvailabilityRequest): Promise<CreateAvailabilityResponse> {
+    const { doctorId, slots } = data;
 
-    return new Availability(
-      result.insertId,
-      data.doctorId,
-      data.dayOfWeek,
-      data.startTime,
-      data.endTime,
-      data.available
-    );
+    let result: CreateAvailabilityResponse = {
+      success: false,
+      message: "No changes made.",
+      insertedCount: 0,
+    };
+
+    let insertedCount = 0;
+
+    await this.db.transaction(async (conn) => {
+      await this.db.transaction(async (conn) => {
+        for (const slot of slots) {
+          const [existing] = await conn.query<any[]>(
+            `SELECT id FROM availabilities 
+             WHERE doctor_id = ? AND day_of_week = ? AND start_time = ? AND end_time = ?`,
+            [doctorId, slot.dayOfWeek, slot.startTime, slot.endTime]
+          );
+
+          if (existing[0]?.id) {
+            // Update availability
+            await conn.execute(
+              `UPDATE availabilities 
+               SET available = ?, updated_at = NOW()
+               WHERE id = ?`,
+              [slot.available, existing[0]?.id]
+            );
+          } else {
+            // Insert new availability
+            await conn.execute(
+              `INSERT INTO availabilities 
+               (id, doctor_id, day_of_week, start_time, end_time, available)
+               VALUES (?, ?, ?, ?, ?, ?)`,
+              [slot.id, doctorId, slot.dayOfWeek, slot.startTime, slot.endTime, slot.available]
+            );
+            insertedCount++;
+          }
+        }
+      });
+
+      result = {
+        success: true,
+        insertedCount,
+        message: `${insertedCount} new availability slot(s) created or updated successfully.`,
+      };
+    });
+
+    return result;
   }
 
   async createBulk(data: CreateBulkAvailabilityRequest): Promise<CreateBulkAvailabilityResponse> {
@@ -96,6 +131,8 @@ export class AvailabilityRepository implements IAvailabilityRepository {
         placeholders.push("(?, ?, ?, ?, ?, ?)");
         values.push(item.id, doctorId, item.dayOfWeek, item.startTime, item.endTime, item.available);
       });
+
+      await conn.execute(`DELETE FROM availabilities WHERE doctor_id = ?`, [doctorId]);
 
       await conn.execute(
         `INSERT INTO availabilities 

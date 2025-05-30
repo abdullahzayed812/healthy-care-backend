@@ -2,6 +2,7 @@ import { IAvailabilityRepository } from "../../core/interfaces/repositories/IAva
 import { Availability } from "../../core/entities/Availability";
 import {
   CreateAvailabilityRequest,
+  CreateAvailabilityResponse,
   CreateBulkAvailabilityRequest,
   UpdateAvailabilityRequest,
 } from "../../core/dto/availability.dto";
@@ -21,7 +22,7 @@ export class AvailabilityService {
     return this.availabilityRepo.findByDoctorId(doctorId);
   }
 
-  create(data: CreateAvailabilityRequest): Promise<Availability> {
+  create(data: CreateAvailabilityRequest): Promise<CreateAvailabilityResponse> {
     return this.availabilityRepo.create(data);
   }
 
