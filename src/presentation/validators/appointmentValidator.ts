@@ -11,8 +11,8 @@ import { Appointment } from "../../core/entities/Appointment";
 export function isAppointment(item: any): item is Appointment {
   return (
     typeof item === "object" &&
-    typeof item.doctorId === "string" &&
-    typeof item.patientId === "string" &&
+    typeof item.doctorId === "number" &&
+    typeof item.patientId === "number" &&
     typeof item.dayOfWeek === "number" &&
     typeof item.startTime === "string" &&
     typeof item.endTime === "string" &&

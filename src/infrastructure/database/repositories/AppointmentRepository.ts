@@ -119,7 +119,7 @@ export class AppointmentRepository implements IAppointmentRepository {
     try {
       return this.db.transaction(async (connection) => {
         // Check availability
-        const availabilityRows = await connection.query(
+        const [availabilityRows] = await connection.query(
           `
           SELECT * FROM availabilities
           WHERE doctor_id = ? AND day_of_week = ? AND available = TRUE
@@ -132,7 +132,7 @@ export class AppointmentRepository implements IAppointmentRepository {
         }
 
         // Check for overlapping appointment
-        const appointmentRows = await connection.query(
+        const [appointmentRows] = await connection.query(
           `
           SELECT * FROM appointments
           WHERE doctor_id = ? AND day_of_week = ?
@@ -145,16 +145,11 @@ export class AppointmentRepository implements IAppointmentRepository {
         }
 
         // Insert new appointment
-        await connection.query(
+        const [result] = await connection.query<any>(
           `
           INSERT INTO appointments (doctor_id, patient_id, reason, day_of_week, start_time, end_time)
           VALUES (?, ?, ?, ?, ?, ?)`,
           [doctorId, patientId, reason, dayOfWeek, startTime, endTime]
-        );
-
-        const [result] = await connection.query<any>(
-          `INSERT INTO appointments (doctor_id, patient_id, start_time, end_time, day_of_week, reason, status) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-          [doctorId, patientId, startTime, endTime, dayOfWeek, reason, status]
         );
 
         const id = result.insertId;

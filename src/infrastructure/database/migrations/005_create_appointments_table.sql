@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS appointments (
   day_of_week       INT NOT NULL,
   start_time        VARCHAR(5) NOT NULL,
   end_time          VARCHAR(5) NOT NULL,
-  status            ENUM('scheduled', 'completed', 'cancelled') DEFAULT 'scheduled',
+  status            ENUM('pending', 'scheduled', 'completed', 'cancelled') DEFAULT 'pending',
 
   FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE,
   FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE
