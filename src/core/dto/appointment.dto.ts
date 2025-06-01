@@ -39,6 +39,7 @@ export interface CreateAppointmentRequest {
   startTime: string;
   endTime: string;
   dayOfWeek: number;
+  date: string;
   reason: string;
   status: AppointmentStatus;
 }

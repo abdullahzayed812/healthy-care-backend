@@ -16,6 +16,7 @@ export function isAppointment(item: any): item is Appointment {
     typeof item.dayOfWeek === "number" &&
     typeof item.startTime === "string" &&
     typeof item.endTime === "string" &&
+    typeof item.date === "string" &&
     typeof item.reason === "string" &&
     typeof item.status === "string"
   );
@@ -71,6 +72,7 @@ export function isCreateAppointmentRequest(
     doctorId: 123,
     patientId: 123,
     dayOfWeek: 1,
+    date: "12-12-2012",
     startTime: "09:00",
     endTime: "09:30",
     reason: "Some text to describe reason",

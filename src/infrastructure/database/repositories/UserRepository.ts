@@ -1,4 +1,5 @@
 import { RegisterRequest, RegisterResponse } from "../../../core/dto/auth.dto";
+import { GetAllUsersResponse } from "../../../core/dto/user.dto";
 import { User } from "../../../core/entities/User";
 import { IUserRepository } from "../../../core/interfaces/repositories/IUserRepository";
 import { DatabaseError } from "../../../utils/errors/DatabaseErrors";
@@ -32,8 +33,24 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  findAll(): Promise<User[]> {
+  findAll(): Promise<GetAllUsersResponse> {
     throw new Error("Method not implemented.");
+  }
+
+  async findAllUsersWithDetails(): Promise<User[]> {
+    const query = `
+      SELECT 
+        u.id, u.email, u.username, u.role, u.phone, u.created_at, u.updated_at,
+        d.specialty, d.bio, d.experience, d.reviews,
+        p.date_of_birth, p.gender
+      FROM users u
+      LEFT JOIN doctors d ON u.id = d.id
+      LEFT JOIN patients p ON u.id = p.id
+    `;
+
+    const rows = await this.dbConnection.query<any[]>(query);
+
+    return rows;
   }
 
   public async create(data: RegisterRequest): Promise<User | null> {

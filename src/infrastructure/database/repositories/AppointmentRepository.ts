@@ -1,3 +1,4 @@
+import { CreateAppointmentRequest } from "../../../core/dto/appointment.dto";
 import { Appointment } from "../../../core/entities/Appointment";
 import { IAppointmentRepository } from "../../../core/interfaces/repositories/IAppointmentRepository";
 import { DatabaseError } from "../../../utils/errors/DatabaseErrors";
@@ -113,8 +114,8 @@ export class AppointmentRepository implements IAppointmentRepository {
     }
   }
 
-  async create(appointment: Omit<Appointment, "id" | "createdAt" | "updatedAt">): Promise<Appointment | null> {
-    const { doctorId, patientId, reason, dayOfWeek, startTime, endTime, status } = appointment;
+  async create(appointment: CreateAppointmentRequest): Promise<Appointment | null> {
+    const { doctorId, patientId, reason, dayOfWeek, startTime, endTime, date, status } = appointment;
 
     try {
       return this.db.transaction(async (connection) => {
@@ -147,9 +148,9 @@ export class AppointmentRepository implements IAppointmentRepository {
         // Insert new appointment
         const [result] = await connection.query<any>(
           `
-          INSERT INTO appointments (doctor_id, patient_id, reason, day_of_week, start_time, end_time)
-          VALUES (?, ?, ?, ?, ?, ?)`,
-          [doctorId, patientId, reason, dayOfWeek, startTime, endTime]
+          INSERT INTO appointments (doctor_id, patient_id, reason, day_of_week, start_time, end_time, date)
+          VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [doctorId, patientId, reason, dayOfWeek, startTime, endTime, date]
         );
 
         const id = result.insertId;
@@ -163,6 +164,7 @@ export class AppointmentRepository implements IAppointmentRepository {
           appointment.dayOfWeek,
           appointment.startTime,
           appointment.endTime,
+          appointment.date,
           appointment.reason,
           appointment.status
         );
