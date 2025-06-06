@@ -40,7 +40,7 @@ export class UserRepository implements IUserRepository {
   async findAllUsersWithDetails(): Promise<User[]> {
     const query = `
       SELECT 
-        u.id, u.email, u.username, u.role, u.phone, u.created_at, u.updated_at,
+        u.id, u.email, u.username, u.role, u.phone_number, u.created_at, u.updated_at,
         d.specialty, d.bio, d.experience, d.reviews,
         p.date_of_birth, p.gender
       FROM users u

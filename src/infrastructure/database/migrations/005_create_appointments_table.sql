@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS appointments (
   day_of_week       INT NOT NULL,
   start_time        VARCHAR(5) NOT NULL,
   end_time          VARCHAR(5) NOT NULL,
+  date              VARCHAR(50) NOT NULL DEFAULT '12-12-2012',  
   status            ENUM('pending', 'scheduled', 'completed', 'cancelled') DEFAULT 'pending',
 
   FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE,

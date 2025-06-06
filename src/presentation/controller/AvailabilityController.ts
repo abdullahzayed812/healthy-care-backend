@@ -86,12 +86,15 @@ export class AvailabilityController {
     async (req, res) => {
       try {
         const id = parseInt(req.params.id);
-        const success = await this.availabilityService.update(id, req.body);
+
+        const success = await this.availabilityService.update(id, req.body as UpdateAvailabilityRequest);
+
         if (!success) {
           res.status(404).json({ error: "Not found", details: "Availability not found" });
           return;
         }
-        res.json({ message: "Availability updated" });
+        res.json({ message: "Availability updated successfully." });
+        return;
       } catch (err) {
         res.status(500).json({ error: "Failed to update availability", details: String(err) });
       }

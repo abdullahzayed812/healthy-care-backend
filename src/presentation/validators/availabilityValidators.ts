@@ -101,9 +101,7 @@ export function isUpdateAvailabilityRequest(
   body: any
 ): true | { error: string; expected: Partial<UpdateAvailabilityRequest> } {
   const expected: Partial<UpdateAvailabilityRequest> = {
-    dayOfWeek: 1,
-    startTime: "09:00",
-    endTime: "09:30",
+    booked: false,
   };
 
   if (!body || typeof body !== "object") {

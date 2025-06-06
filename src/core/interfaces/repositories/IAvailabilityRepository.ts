@@ -4,6 +4,7 @@ import {
   CreateAvailabilityRequest,
   CreateAvailabilityResponse,
   CreateBulkAvailabilityRequest,
+  UpdateAvailabilityRequest,
 } from "../../dto/availability.dto";
 
 export interface IAvailabilityRepository {
@@ -12,6 +13,6 @@ export interface IAvailabilityRepository {
   findByDoctorId(doctorId: number): Promise<Availability[]>;
   createBulk(data: CreateBulkAvailabilityRequest): Promise<any>;
   create(data: CreateAvailabilityRequest): Promise<CreateAvailabilityResponse>;
-  update(id: number, data: Partial<Availability>): Promise<boolean>;
+  update(id: number, data: UpdateAvailabilityRequest): Promise<boolean>;
   delete(id: number): Promise<boolean>;
 }

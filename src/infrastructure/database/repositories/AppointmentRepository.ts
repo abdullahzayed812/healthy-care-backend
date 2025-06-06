@@ -33,6 +33,85 @@ export class AppointmentRepository implements IAppointmentRepository {
       throw new DatabaseError("Failed to find all appointment", "FIND_ALL_APPOINTMENT_DB_ERROR");
     }
   }
+  async findAllWithRelations(): Promise<any[] | null> {
+    try {
+      const result = await this.db.query<any[]>(
+        `
+        SELECT 
+          a.id AS appointment_id,
+          a.day_of_week,
+          a.start_time,
+          a.end_time,
+          a.reason,
+          a.status,
+          a.date,
+  
+          d.id AS doctor_id,
+          d.specialty,
+          d.bio,
+          d.experience,
+          d.reviews,
+          u_doctor.email AS doctor_email,
+          u_doctor.username AS doctor_username,
+          u_doctor.phone_number AS doctor_phone,
+  
+          p.id AS patient_id,
+          p.date_of_birth,
+          p.gender,
+          u_patient.email AS patient_email,
+          u_patient.username AS patient_username,
+          u_patient.phone_number AS patient_phone
+  
+        FROM appointments a
+        JOIN doctors d ON a.doctor_id = d.id
+        JOIN users u_doctor ON d.id = u_doctor.id
+  
+        JOIN patients p ON a.patient_id = p.id
+        JOIN users u_patient ON p.id = u_patient.id
+        `
+      );
+
+      if (!result.length) return null;
+
+      return result.map((row) => ({
+        appointment: {
+          id: row.appointment_id,
+          dayOfWeek: row.day_of_week,
+          startTime: row.start_time,
+          endTime: row.end_time,
+          date: row.date,
+          reason: row.reason,
+          status: row.status,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+        },
+        doctor: {
+          id: row.doctor_id,
+          email: row.doctor_email,
+          username: row.doctor_username,
+          phone: row.doctor_phone,
+          specialty: row.specialty,
+          bio: row.bio,
+          experience: row.experience,
+          reviews: row.reviews,
+        },
+        patient: {
+          id: row.patient_id,
+          email: row.patient_email,
+          username: row.patient_username,
+          phone: row.patient_phone,
+          dateOfBirth: row.date_of_birth,
+          gender: row.gender,
+        },
+      }));
+    } catch (error) {
+      console.error("Error fetching appointments with full user data:", error);
+      throw new DatabaseError(
+        "Failed to fetch appointments with related user data",
+        "FIND_ALL_WITH_RELATIONS_DB_ERROR"
+      );
+    }
+  }
 
   async findById(id: number): Promise<Appointment | null> {
     try {
@@ -75,6 +154,7 @@ export class AppointmentRepository implements IAppointmentRepository {
             appointment.day_of_week,
             appointment.start_time,
             appointment.end_time,
+            appointment.date,
             appointment.reason,
             appointment.status,
             appointment.created_at,

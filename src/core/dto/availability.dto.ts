@@ -40,9 +40,7 @@ export interface UpdateAvailabilityParams extends ParamsDictionary {
   id: string;
 }
 export interface UpdateAvailabilityRequest {
-  dayOfWeek?: number;
-  startTime?: string;
-  endTime?: string;
+  booked: boolean;
 }
 export interface UpdateAvailabilityResponse {
   message: string;

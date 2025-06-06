@@ -44,8 +44,8 @@ router.get(
   AuthMiddleware.requireRole("doctor", "patient"),
   controller.getById
 );
-router.put(
-  "/:id",
+router.patch(
+  "/:id/status",
   requestValidator.validate({ params: isAvailabilityParams, body: isUpdateAvailabilityRequest }),
   AuthMiddleware.authenticate,
   AuthMiddleware.requireRole("doctor"),

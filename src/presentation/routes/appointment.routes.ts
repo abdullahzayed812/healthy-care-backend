@@ -11,7 +11,7 @@ const controller = new AppointmentController(container.appointmentService);
 router.get(
   "/doctors/:id",
   AuthMiddleware.authenticate,
-  AuthMiddleware.requireRole("doctor"),
+  AuthMiddleware.requireRole("doctor", "patient"),
   requestValidator.validate({ params: isDoctorIdParams }),
   controller.getByDoctorId
 );
@@ -24,6 +24,12 @@ router.get(
 );
 
 router.get("/", controller.getAll);
+router.get(
+  "/with-relations",
+  AuthMiddleware.authenticate,
+  AuthMiddleware.requireRole("admin"),
+  controller.getAllWithRelations
+);
 router.post(
   "/",
   AuthMiddleware.authenticate,

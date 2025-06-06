@@ -6,7 +6,9 @@ import {
   CreateAvailabilityResponse,
   CreateBulkAvailabilityRequest,
   CreateBulkAvailabilityResponse,
+  UpdateAvailabilityRequest,
 } from "../../../core/dto/availability.dto";
+import { DatabaseError } from "../../../utils/errors/DatabaseErrors";
 
 export class AvailabilityRepository implements IAvailabilityRepository {
   constructor(private db: MySqlConnection) {}
@@ -151,29 +153,14 @@ export class AvailabilityRepository implements IAvailabilityRepository {
     });
   }
 
-  async update(id: number, data: Partial<Availability>): Promise<boolean> {
-    const updates: string[] = [];
-    const params: any[] = [];
-
-    if (data.dayOfWeek) {
-      updates.push("day_of_week = ?");
-      params.push(data.dayOfWeek);
+  async update(id: number, data: UpdateAvailabilityRequest): Promise<boolean> {
+    try {
+      const result = await this.db.query<any>(`UPDATE availabilities SET booked = ? WHERE id = ?`, [data.booked, id]);
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error("Error update availability status:", error);
+      throw new DatabaseError("Failed to update availability status", "UPDATE_AVAILABILITY_STATUS_DB_ERROR");
     }
-    if (data.startTime) {
-      updates.push("start_time = ?");
-      params.push(data.startTime);
-    }
-    if (data.endTime) {
-      updates.push("end_time = ?");
-      params.push(data.endTime);
-    }
-
-    updates.push("updated_at = ?");
-    params.push(new Date());
-    params.push(id);
-
-    const result = await this.db.query<any>(`UPDATE availabilities SET ${updates.join(", ")} WHERE id = ?`, params);
-    return result.affectedRows > 0;
   }
 
   async delete(id: number): Promise<boolean> {

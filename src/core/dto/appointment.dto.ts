@@ -7,6 +7,11 @@ export interface GetAllAppointmentsResponse {
   appointments: Appointment[];
 }
 
+// ---------- GET ALL WITH RELATIONS ----------
+export interface GetAllAppointmentsWithRelationsResponse {
+  appointments: any[] | null;
+}
+
 // ---------- GET BY ID ----------
 export interface GetAppointmentByIdParams extends ParamsDictionary {
   id: string;

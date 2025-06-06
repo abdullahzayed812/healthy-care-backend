@@ -8,6 +8,7 @@ import {
   DeleteAppointmentResponse,
   GetAllAppointmentsRequest,
   GetAllAppointmentsResponse,
+  GetAllAppointmentsWithRelationsResponse,
   GetAppointmentByIdParams,
   GetAppointmentByIdRequest,
   GetAppointmentByIdResponse,
@@ -33,7 +34,23 @@ export class AppointmentController {
       res.status(200).json({ appointments });
     } catch (err) {
       handleErrorResponse(res, err);
-      res.status(500).json({ error: "Internal server error" });
+    }
+  };
+
+  getAllWithRelations: ExpressHandler<{}, GetAllAppointmentsWithRelationsResponse> = async (req, res) => {
+    try {
+      const appointments = await this.service.getAllWithRelations();
+
+      if (!appointments) {
+        res.status(404).json({ error: "Cant found appointments..." });
+        return;
+      }
+
+      res.status(200).json({ appointments });
+      return;
+    } catch (error) {
+      handleErrorResponse(res, error);
+      return;
     }
   };
 
@@ -112,7 +129,7 @@ export class AppointmentController {
       const appointments = await this.service.findByDoctorId(id);
 
       if (!appointments) {
-        res.status(404).json({ error: "Can't get appointment by doctor id." });
+        res.status(200).json({ appointments: [] });
         return;
       }
 

@@ -9,6 +9,10 @@ export class AppointmentService {
     return this.appointmentRepo.findAll();
   }
 
+  async getAllWithRelations(): Promise<any[] | null> {
+    return this.appointmentRepo.findAllWithRelations();
+  }
+
   async getById(id: number): Promise<Appointment | null> {
     return this.appointmentRepo.findById(id);
   }

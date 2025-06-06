@@ -4,6 +4,7 @@ import { IRepository } from "./IRepository";
 
 export interface IAppointmentRepository {
   findAll(): Promise<Appointment[] | null>;
+  findAllWithRelations(): Promise<any[] | null>;
   findById(id: number): Promise<Appointment | null>;
   findByDoctorId(doctorId: number): Promise<Appointment[] | null>;
   findByPatientId(patientId: number): Promise<Appointment[] | null>;
