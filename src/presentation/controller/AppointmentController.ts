@@ -68,8 +68,8 @@ export class AppointmentController {
       }
 
       res.status(200).json(appointment);
-    } catch (err) {
-      res.status(500).json({ error: "Internal server error" });
+    } catch (error) {
+      handleErrorResponse(res, error);
     }
   };
 
@@ -83,8 +83,8 @@ export class AppointmentController {
       }
 
       res.status(201).json(appointment);
-    } catch (err: any) {
-      res.status(400).json({ error: "Invalid request", details: err.message });
+    } catch (error: any) {
+      handleErrorResponse(res, error);
     }
   };
 
@@ -100,8 +100,8 @@ export class AppointmentController {
         return;
       }
       res.status(200).json({ message: "Appointment updated successfully" });
-    } catch (err) {
-      res.status(500).json({ error: "Internal server error" });
+    } catch (error) {
+      handleErrorResponse(res, error);
     }
   };
 
@@ -117,8 +117,8 @@ export class AppointmentController {
         return;
       }
       res.status(200).json({ message: "Appointment deleted successfully" });
-    } catch (err) {
-      res.status(500).json({ error: "Internal server error" });
+    } catch (error) {
+      handleErrorResponse(res, error);
     }
   };
 
@@ -135,7 +135,7 @@ export class AppointmentController {
 
       res.status(200).json({ appointments });
     } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
+      handleErrorResponse(res, error);
     }
   };
 
@@ -151,7 +151,7 @@ export class AppointmentController {
 
       res.status(200).json({ appointments });
     } catch (error) {
-      res.status(500).json({ error: "Internal server error" });
+      handleErrorResponse(res, error);
     }
   };
 }
