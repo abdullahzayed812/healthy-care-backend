@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
     username      VARCHAR(50) NOT NULL,
     role          ENUM('admin', 'doctor', 'patient') NOT NULL,
     password      VARCHAR(255),
-    phone         VARCHAR(20),
+    phone_number  VARCHAR(20),
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
