@@ -12,6 +12,7 @@ import {
   GetAppointmentByIdParams,
   GetAppointmentByIdRequest,
   GetAppointmentByIdResponse,
+  IGetAppointmentsWithDoctorDate,
   UpdateAppointmentParams,
   UpdateAppointmentRequest,
   UpdateAppointmentResponse,
@@ -122,7 +123,10 @@ export class AppointmentController {
     }
   };
 
-  getByDoctorId: ExpressHandler<{}, { appointments: Appointment[] }, { id: string }> = async (req, res) => {
+  getByDoctorId: ExpressHandler<{}, { appointments: IGetAppointmentsWithDoctorDate[] }, { id: string }> = async (
+    req,
+    res
+  ) => {
     try {
       const id = parseInt(req.params.id);
 

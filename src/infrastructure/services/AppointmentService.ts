@@ -1,6 +1,10 @@
 import { Appointment } from "../../core/entities/Appointment";
 import { IAppointmentRepository } from "../../core/interfaces/repositories/IAppointmentRepository";
-import { CreateAppointmentRequest, UpdateAppointmentRequest } from "../../core/dto/appointment.dto";
+import {
+  CreateAppointmentRequest,
+  IGetAppointmentsWithDoctorDate,
+  UpdateAppointmentRequest,
+} from "../../core/dto/appointment.dto";
 
 export class AppointmentService {
   constructor(private appointmentRepo: IAppointmentRepository) {}
@@ -17,11 +21,11 @@ export class AppointmentService {
     return this.appointmentRepo.findById(id);
   }
 
-  async findByDoctorId(doctorId: number): Promise<Appointment[] | null> {
+  async findByDoctorId(doctorId: number): Promise<IGetAppointmentsWithDoctorDate[] | null> {
     return this.appointmentRepo.findByDoctorId(doctorId);
   }
 
-  async findByPatientId(patientId: number): Promise<Appointment[] | null> {
+  async findByPatientId(patientId: number): Promise<IGetAppointmentsWithDoctorDate[] | null> {
     return this.appointmentRepo.findByPatientId(patientId);
   }
 

@@ -140,28 +140,70 @@ export class AppointmentRepository implements IAppointmentRepository {
     }
   }
 
-  async findByDoctorId(doctorId: number): Promise<Appointment[] | null> {
+  async findByDoctorId(doctorId: number): Promise<IGetAppointmentsWithDoctorDate[] | null> {
     try {
-      const result = await this.db.query<any[]>("SELECT * FROM appointments WHERE doctor_id = ?", [doctorId]);
+      const result = await this.db.query<any[]>(
+        `
+        SELECT 
+          a.id AS appointment_id,
+          a.day_of_week,
+          a.start_time,
+          a.end_time,
+          a.reason,
+          a.status,
+          a.date,
+
+          d.id AS doctor_id,
+          d.specialty,
+          d.experience,
+          d.reviews,
+          d.bio,
+
+          u_doctor.email AS doctor_email,
+          u_doctor.username AS doctor_username,
+          u_doctor.phone_number AS doctor_phone,
+          u_patient.email AS patient_email,
+          u_patient.username AS patient_username,
+          u_patient.phone_number AS patient_phone
+
+        FROM appointments a
+        JOIN doctors d ON a.doctor_id = d.id
+        JOIN patients p ON a.patient_id = p.id
+        JOIN users u_doctor ON d.id = u_doctor.id
+        JOIN users u_patient ON p.id = u_patient.id
+        WHERE a.doctor_id = ?
+        `,
+        [doctorId]
+      );
 
       if (!result.length) return null;
 
-      return result.map(
-        (appointment) =>
-          new Appointment(
-            appointment.id,
-            appointment.doctor_id,
-            appointment.patient_id,
-            appointment.day_of_week,
-            appointment.start_time,
-            appointment.end_time,
-            appointment.date,
-            appointment.reason,
-            appointment.status,
-            appointment.created_at,
-            appointment.updated_at
-          )
-      );
+      return result.map((row) => ({
+        id: row.appointment_id,
+        dayOfWeek: row.day_of_week,
+        startTime: row.start_time,
+        endTime: row.end_time,
+        date: row.date,
+        reason: row.reason,
+        status: row.status,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        doctor: {
+          id: row.doctor_id,
+          email: row.doctor_email,
+          username: row.doctor_username,
+          phone: row.doctor_phone,
+          specialty: row.specialty,
+          bio: row.bio,
+          experience: row.experience,
+          reviews: row.reviews,
+        },
+        patient: {
+          id: row.patient_id,
+          username: row.patient_username,
+          email: row.patient_email,
+        },
+      }));
     } catch (error) {
       console.error("Error find appointment by doctor id:", error);
       throw new DatabaseError("Failed to find appointment by doctor id", "FIND_APPOINTMENT_BY_DOCTOR_ID_DB_ERROR");

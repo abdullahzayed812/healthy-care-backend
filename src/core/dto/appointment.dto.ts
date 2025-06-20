@@ -56,6 +56,12 @@ export interface IGetAppointmentsWithDoctorDate {
     experience: string;
     reviews: string;
   };
+  patient?: {
+    id: number;
+    username: string;
+    avatar?: string;
+    email: string;
+  };
 }
 
 // ---------- CREATE ----------
