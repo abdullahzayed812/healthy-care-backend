@@ -1,5 +1,6 @@
-import { CreateAppointmentRequest } from "../../../core/dto/appointment.dto";
+import { CreateAppointmentRequest, IGetAppointmentsWithDoctorDate } from "../../../core/dto/appointment.dto";
 import { Appointment } from "../../../core/entities/Appointment";
+import { Doctor } from "../../../core/entities/Doctor";
 import { IAppointmentRepository } from "../../../core/interfaces/repositories/IAppointmentRepository";
 import { DatabaseError } from "../../../utils/errors/DatabaseErrors";
 import { MySqlConnection } from "../connections/MySqlConnection";
@@ -167,27 +168,60 @@ export class AppointmentRepository implements IAppointmentRepository {
     }
   }
 
-  async findByPatientId(patientId: number): Promise<Appointment[] | null> {
+  async findByPatientId(patientId: number): Promise<IGetAppointmentsWithDoctorDate[] | null> {
     try {
-      const result = await this.db.query<any[]>("SELECT * FROM appointments WHERE patient_id = ?", [patientId]);
+      const result = await this.db.query<any[]>(
+        `
+        SELECT 
+          a.id AS appointment_id,
+          a.day_of_week,
+          a.start_time,
+          a.end_time,
+          a.reason,
+          a.status,
+          a.date,
+
+          d.id AS doctor_id,
+          d.specialty,
+          d.experience,
+          d.reviews,
+          d.bio,
+
+          u_doctor.email AS doctor_email,
+          u_doctor.username AS doctor_username,
+          u_doctor.phone_number AS doctor_phone
+
+        FROM appointments a
+        JOIN doctors d ON a.doctor_id = d.id
+        JOIN users u_doctor ON d.id = u_doctor.id
+        WHERE a.patient_id = ?
+        `,
+        [patientId]
+      );
 
       if (!result.length) return null;
 
-      return result.map(
-        (appointment) =>
-          new Appointment(
-            appointment.id,
-            appointment.doctor_id,
-            appointment.patient_id,
-            appointment.day_of_week,
-            appointment.start_time,
-            appointment.end_time,
-            appointment.reason,
-            appointment.status,
-            appointment.created_at,
-            appointment.updated_at
-          )
-      );
+      return result.map((row) => ({
+        id: row.appointment_id,
+        dayOfWeek: row.day_of_week,
+        startTime: row.start_time,
+        endTime: row.end_time,
+        date: row.date,
+        reason: row.reason,
+        status: row.status,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+        doctor: {
+          id: row.doctor_id,
+          email: row.doctor_email,
+          username: row.doctor_username,
+          phone: row.doctor_phone,
+          specialty: row.specialty,
+          bio: row.bio,
+          experience: row.experience,
+          reviews: row.reviews,
+        },
+      }));
     } catch (error) {
       console.error("Error find appointment by patient id:", error);
       throw new DatabaseError("Failed to find appointment by patient id", "FIND_APPOINTMENT_BY_PATIENT_ID_DB_ERROR");

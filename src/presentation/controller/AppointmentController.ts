@@ -139,7 +139,7 @@ export class AppointmentController {
     }
   };
 
-  getByPatientId: ExpressHandler<{}, { appointments: Appointment[] }, { id: string }> = async (req, res) => {
+  getByPatientId: ExpressHandler<{}, any, { id: string }> = async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const appointments = await this.service.findByPatientId(id);
@@ -149,7 +149,7 @@ export class AppointmentController {
         return;
       }
 
-      res.status(200).json({ appointments });
+      res.status(200).json(appointments);
     } catch (error) {
       handleErrorResponse(res, error);
     }

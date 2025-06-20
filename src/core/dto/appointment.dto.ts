@@ -36,6 +36,27 @@ export interface GetAppointmentByPatientIdRequest {}
 export interface GetAppointmentByPatientIdResponse {
   appointments: Appointment[];
 }
+export interface IGetAppointmentsWithDoctorDate {
+  id: number;
+  dayOfWeek: string;
+  startTime: string;
+  endTime: string;
+  date: string;
+  reason: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  doctor: {
+    id: string;
+    email: string;
+    username: string;
+    phone: string;
+    specialty: string;
+    bio: string;
+    experience: string;
+    reviews: string;
+  };
+}
 
 // ---------- CREATE ----------
 export interface CreateAppointmentRequest {

@@ -8,7 +8,7 @@ const router = Router();
 
 const controller = new UserController(container.userService);
 
-router.get("/all", AuthMiddleware.authenticate, AuthMiddleware.requireRole("admin"), controller.getAll);
+router.get("/all", controller.getAll);
 router.post("/:id/avatar", upload.single("avatar"), controller.uploadAvatar);
 
 export default router;
