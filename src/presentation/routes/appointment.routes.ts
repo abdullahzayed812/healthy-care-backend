@@ -3,7 +3,13 @@ import { AppointmentController } from "../controller/AppointmentController";
 import { container } from "../../di/container";
 import { AuthMiddleware } from "../middlewares/Auth";
 import { requestValidator } from "../middlewares/RequestValidator";
-import { isCreateAppointmentRequest, isDoctorIdParams, isPatientIdParams } from "../validators/appointmentValidator";
+import {
+  isCreateAppointmentRequest,
+  isDoctorIdParams,
+  isPatientIdParams,
+  isUpdateAppointmentStatusParams,
+  isUpdateAppointmentStatusRequest,
+} from "../validators/appointmentValidator";
 
 const router = Router();
 const controller = new AppointmentController(container.appointmentService);
@@ -39,6 +45,13 @@ router.post(
 );
 router.get("/:id", controller.getById);
 router.put("/:id", controller.update);
+router.patch(
+  "/:id/status",
+  AuthMiddleware.authenticate,
+  AuthMiddleware.requireRole("doctor", "admin"),
+  requestValidator.validate({ body: isUpdateAppointmentStatusRequest, params: isUpdateAppointmentStatusParams }),
+  controller.updateStatus
+);
 router.delete("/:id", controller.delete);
 
 export default router;

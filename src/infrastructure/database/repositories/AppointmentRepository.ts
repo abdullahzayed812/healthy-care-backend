@@ -1,5 +1,5 @@
 import { CreateAppointmentRequest, IGetAppointmentsWithDoctorDate } from "../../../core/dto/appointment.dto";
-import { Appointment } from "../../../core/entities/Appointment";
+import { Appointment, AppointmentStatus } from "../../../core/entities/Appointment";
 import { Doctor } from "../../../core/entities/Doctor";
 import { IAppointmentRepository } from "../../../core/interfaces/repositories/IAppointmentRepository";
 import { DatabaseError } from "../../../utils/errors/DatabaseErrors";
@@ -363,6 +363,12 @@ export class AppointmentRepository implements IAppointmentRepository {
       console.error("Error update appointment:", error);
       throw new DatabaseError("Failed to update appointment", "UPDATE_APPOINTMENT_DB_ERROR");
     }
+  }
+
+  async updateStatus(id: number, status: AppointmentStatus): Promise<boolean> {
+    const result = await this.db.query<any>(`UPDATE appointments SET status = ? WHERE id = ?`, [status, id]);
+
+    return result.affectedRows > 0;
   }
 
   async delete(id: number): Promise<boolean> {

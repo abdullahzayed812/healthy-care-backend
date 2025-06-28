@@ -94,6 +94,20 @@ export interface UpdateAppointmentResponse {
   message: string;
 }
 
+// ---------- UPDATE STATUS ----------
+export interface UpdateAppointmentStatusRequest {
+  status: AppointmentStatus;
+  appointmentId?: string;
+}
+
+export interface UpdateAppointmentStatusResponse {
+  message: string;
+}
+
+export interface UpdateAppointmentStatusParams extends ParamsDictionary {
+  id: string;
+}
+
 // ---------- DELETE ----------
 export interface DeleteAppointmentParams extends ParamsDictionary {
   id: string;

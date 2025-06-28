@@ -4,13 +4,38 @@ import {
   GetAppointmentByIdParams,
   GetAppointmentByPatientIdParams,
   UpdateAppointmentRequest,
+  UpdateAppointmentStatusRequest,
 } from "../../core/dto/appointment.dto";
-import { Appointment } from "../../core/entities/Appointment";
+import { AppointmentStatus } from "../../core/entities/Appointment";
 
-// Helper to validate an Appointment object
-export function isAppointment(item: any): item is Appointment {
+// --- Shared Helpers ---
+
+function isObject(value: any): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function hasOnlyAllowedKeys(obj: any, allowedKeys: string[]): boolean {
+  return Object.keys(obj).every((key) => allowedKeys.includes(key));
+}
+
+function validateIdParam(
+  params: any,
+  expected: GetAppointmentByIdParams | GetAppointmentByDoctorIdParams | GetAppointmentByPatientIdParams
+): true | { error: string; expected: typeof expected } {
+  if (!isObject(params) || typeof params.id !== "string") {
+    return {
+      error: "Invalid route parameter. 'id' must be a string.",
+      expected,
+    };
+  }
+  return true;
+}
+
+// --- Appointment Structure Validator ---
+
+export function isAppointment(item: any): boolean {
   return (
-    typeof item === "object" &&
+    isObject(item) &&
     typeof item.doctorId === "number" &&
     typeof item.patientId === "number" &&
     typeof item.dayOfWeek === "number" &&
@@ -22,49 +47,26 @@ export function isAppointment(item: any): item is Appointment {
   );
 }
 
-// GetAppointmentByIdParams validator
-export function isAppointmentIdParam(params: any): true | { error: string; expected: GetAppointmentByIdParams } {
-  const expected: GetAppointmentByIdParams = { id: "doctor id as query parameter" };
+// --- Param Validators ---
 
-  if (typeof params !== "object" || typeof params.id !== "string") {
-    return {
-      error: "Invalid route parameter. 'id' must be a string.",
-      expected,
-    };
-  }
-
-  return true;
+export function isAppointmentIdParam(params: any) {
+  return validateIdParam(params, { id: "appointment id as query parameter" });
 }
 
-// GetAppointmentByDoctorIdParams validator
-export function isDoctorIdParams(params: any): true | { error: string; expected: GetAppointmentByDoctorIdParams } {
-  const expected: GetAppointmentByDoctorIdParams = { id: "doctor id as query parameter" };
-
-  if (typeof params !== "object" || typeof params.id !== "string") {
-    return {
-      error: "Invalid route parameter. 'id' must be a string.",
-      expected,
-    };
-  }
-
-  return true;
+export function isDoctorIdParams(params: any) {
+  return validateIdParam(params, { id: "doctor id as query parameter" });
 }
 
-// GetAppointmentByPatientIdParams validator
-export function isPatientIdParams(params: any): true | { error: string; expected: GetAppointmentByPatientIdParams } {
-  const expected: GetAppointmentByDoctorIdParams = { id: "doctor id as query parameter" };
-
-  if (typeof params !== "object" || typeof params.id !== "string") {
-    return {
-      error: "Invalid route parameter. 'id' must be a string.",
-      expected,
-    };
-  }
-
-  return true;
+export function isPatientIdParams(params: any) {
+  return validateIdParam(params, { id: "patient id as query parameter" });
 }
 
-// CreateAppointmentRequest validator
+export function isUpdateAppointmentStatusParams(params: any) {
+  return validateIdParam(params, { id: "appointment id as query parameter" });
+}
+
+// --- Request Body Validators ---
+
 export function isCreateAppointmentRequest(
   body: CreateAppointmentRequest
 ): true | { error: string; expected: CreateAppointmentRequest } {
@@ -75,8 +77,8 @@ export function isCreateAppointmentRequest(
     date: "12-12-2012",
     startTime: "09:00",
     endTime: "09:30",
-    reason: "Some text to describe reason",
-    status: "SCHEDULE",
+    reason: "Some reason here",
+    status: "SCHEDULED",
   };
 
   if (!isAppointment(body)) {
@@ -89,7 +91,6 @@ export function isCreateAppointmentRequest(
   return true;
 }
 
-// UpdateAppointmentRequest validator
 export function isUpdateAppointmentRequest(
   body: any
 ): true | { error: string; expected: Partial<UpdateAppointmentRequest> } {
@@ -97,20 +98,19 @@ export function isUpdateAppointmentRequest(
     dayOfWeek: 1,
     startTime: "09:00",
     endTime: "09:30",
+    reason: "Optional reason",
+    status: "SCHEDULED",
   };
 
-  if (!body || typeof body !== "object") {
+  if (!isObject(body)) {
     return {
       error: "Request body must be an object.",
       expected,
     };
   }
 
-  const allowedKeys = ["dayOfWeek", "startTime", "endTime"];
-  const keys = Object.keys(body);
-
-  const hasInvalidKey = keys.some((key) => !allowedKeys.includes(key));
-  if (hasInvalidKey) {
+  const allowedKeys = ["dayOfWeek", "startTime", "endTime", "reason", "status"];
+  if (!hasOnlyAllowedKeys(body, allowedKeys)) {
     return {
       error: `Invalid key(s) in body. Allowed keys: ${allowedKeys.join(", ")}`,
       expected,
@@ -126,6 +126,36 @@ export function isUpdateAppointmentRequest(
   ) {
     return {
       error: "One or more fields have an incorrect type.",
+      expected,
+    };
+  }
+
+  return true;
+}
+
+export function isUpdateAppointmentStatusRequest(
+  body: any
+): true | { error: string; expected: UpdateAppointmentStatusRequest } {
+  const expected: UpdateAppointmentStatusRequest = { status: "SCHEDULED" };
+
+  if (!isObject(body)) {
+    return {
+      error: "Request body must be an object.",
+      expected,
+    };
+  }
+
+  const allowedKeys = ["status", "appointmentId"];
+  if (!hasOnlyAllowedKeys(body, allowedKeys)) {
+    return {
+      error: `Invalid key(s) in body. Allowed keys: ${allowedKeys.join(", ")}`,
+      expected,
+    };
+  }
+
+  if (typeof body.status !== "string" || !["PENDING", "SCHEDULED", "COMPLETED", "CANCELLED"].includes(body.status)) {
+    return {
+      error: "Invalid or missing status value.",
       expected,
     };
   }

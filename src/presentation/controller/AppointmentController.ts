@@ -16,8 +16,10 @@ import {
   UpdateAppointmentParams,
   UpdateAppointmentRequest,
   UpdateAppointmentResponse,
+  UpdateAppointmentStatusParams,
+  UpdateAppointmentStatusRequest,
+  UpdateAppointmentStatusResponse,
 } from "../../core/dto/appointment.dto";
-import { Appointment } from "../../core/entities/Appointment";
 import { handleErrorResponse } from "../../utils/errors/errorResponse";
 
 export class AppointmentController {
@@ -74,6 +76,42 @@ export class AppointmentController {
     }
   };
 
+  getByDoctorId: ExpressHandler<{}, { appointments: IGetAppointmentsWithDoctorDate[] }, { id: string }> = async (
+    req,
+    res
+  ) => {
+    try {
+      const id = parseInt(req.params.id);
+
+      const appointments = await this.service.findByDoctorId(id);
+
+      if (!appointments) {
+        res.status(200).json({ appointments: [] });
+        return;
+      }
+
+      res.status(200).json({ appointments });
+    } catch (error) {
+      handleErrorResponse(res, error);
+    }
+  };
+
+  getByPatientId: ExpressHandler<{}, any, { id: string }> = async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const appointments = await this.service.findByPatientId(id);
+
+      if (!appointments) {
+        res.status(404).json({ error: "Can't get appointment by patient id." });
+        return;
+      }
+
+      res.status(200).json(appointments);
+    } catch (error) {
+      handleErrorResponse(res, error);
+    }
+  };
+
   create: ExpressHandler<CreateAppointmentRequest, CreateAppointmentResponse> = async (req, res) => {
     try {
       const appointment = await this.service.create(req.body as CreateAppointmentRequest);
@@ -106,6 +144,28 @@ export class AppointmentController {
     }
   };
 
+  updateStatus: ExpressHandler<
+    UpdateAppointmentStatusRequest,
+    UpdateAppointmentStatusResponse,
+    UpdateAppointmentStatusParams
+  > = async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = req.body;
+
+      const updated = await this.service.updateStatus(id, status);
+
+      if (!updated) {
+        res.status(404).json({ error: "Appointment not found or update failed" });
+        return;
+      }
+
+      res.status(200).json({ message: "Appointment status updated successfully" });
+    } catch (error) {
+      handleErrorResponse(res, error);
+    }
+  };
+
   delete: ExpressHandler<DeleteAppointmentRequest, DeleteAppointmentResponse, DeleteAppointmentParams> = async (
     req,
     res
@@ -118,42 +178,6 @@ export class AppointmentController {
         return;
       }
       res.status(200).json({ message: "Appointment deleted successfully" });
-    } catch (error) {
-      handleErrorResponse(res, error);
-    }
-  };
-
-  getByDoctorId: ExpressHandler<{}, { appointments: IGetAppointmentsWithDoctorDate[] }, { id: string }> = async (
-    req,
-    res
-  ) => {
-    try {
-      const id = parseInt(req.params.id);
-
-      const appointments = await this.service.findByDoctorId(id);
-
-      if (!appointments) {
-        res.status(200).json({ appointments: [] });
-        return;
-      }
-
-      res.status(200).json({ appointments });
-    } catch (error) {
-      handleErrorResponse(res, error);
-    }
-  };
-
-  getByPatientId: ExpressHandler<{}, any, { id: string }> = async (req, res) => {
-    try {
-      const id = parseInt(req.params.id);
-      const appointments = await this.service.findByPatientId(id);
-
-      if (!appointments) {
-        res.status(404).json({ error: "Can't get appointment by patient id." });
-        return;
-      }
-
-      res.status(200).json(appointments);
     } catch (error) {
       handleErrorResponse(res, error);
     }

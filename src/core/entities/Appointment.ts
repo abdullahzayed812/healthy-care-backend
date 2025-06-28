@@ -1,4 +1,4 @@
-export type AppointmentStatus = "SCHEDULE" | "COMPLETED" | "CANCELED";
+export type AppointmentStatus = "PENDING" | "SCHEDULED" | "COMPLETED" | "CANCELLED";
 
 export class Appointment {
   constructor(

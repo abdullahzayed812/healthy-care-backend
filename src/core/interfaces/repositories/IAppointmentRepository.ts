@@ -1,5 +1,5 @@
 import { CreateAppointmentRequest, IGetAppointmentsWithDoctorDate } from "../../dto/appointment.dto";
-import { Appointment } from "../../entities/Appointment";
+import { Appointment, AppointmentStatus } from "../../entities/Appointment";
 
 export interface IAppointmentRepository {
   findAll(): Promise<Appointment[] | null>;
@@ -9,5 +9,6 @@ export interface IAppointmentRepository {
   findByPatientId(patientId: number): Promise<IGetAppointmentsWithDoctorDate[] | null>;
   create(appointment: CreateAppointmentRequest): Promise<Appointment | null>;
   update(id: number, data: Partial<Appointment>): Promise<boolean>;
+  updateStatus(id: number, status: AppointmentStatus): Promise<boolean>;
   delete(id: number): Promise<boolean>;
 }

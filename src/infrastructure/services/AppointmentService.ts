@@ -1,4 +1,4 @@
-import { Appointment } from "../../core/entities/Appointment";
+import { Appointment, AppointmentStatus } from "../../core/entities/Appointment";
 import { IAppointmentRepository } from "../../core/interfaces/repositories/IAppointmentRepository";
 import {
   CreateAppointmentRequest,
@@ -35,6 +35,11 @@ export class AppointmentService {
 
   async update(id: number, data: UpdateAppointmentRequest): Promise<boolean> {
     return this.appointmentRepo.update(id, data as Partial<Appointment>);
+  }
+
+  async updateStatus(id: number, status?: AppointmentStatus): Promise<boolean> {
+    if (!status) return false;
+    return this.appointmentRepo.updateStatus(id, status);
   }
 
   async delete(id: number): Promise<boolean> {
