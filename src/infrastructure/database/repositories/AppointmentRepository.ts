@@ -293,7 +293,7 @@ export class AppointmentRepository implements IAppointmentRepository {
           `
           SELECT * FROM appointments
           WHERE doctor_id = ? AND day_of_week = ?
-          AND NOT (end_time <= ? OR start_time >= ?)`,
+          AND start_time = ? AND end_time = ?`,
           [doctorId, dayOfWeek, startTime, endTime]
         );
 
@@ -307,6 +307,14 @@ export class AppointmentRepository implements IAppointmentRepository {
           INSERT INTO appointments (doctor_id, patient_id, reason, day_of_week, start_time, end_time, date)
           VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [doctorId, patientId, reason, dayOfWeek, startTime, endTime, date]
+        );
+
+        await connection.query(
+          `
+          UPDATE availabilities
+          SET booked = TRUE, available = FALSE, updated_at = NOW()
+          WHERE doctor_id = ? AND day_of_week = ? AND start_time = ? AND end_time = ?`,
+          [doctorId, dayOfWeek, startTime, endTime]
         );
 
         const id = result.insertId;
@@ -366,9 +374,40 @@ export class AppointmentRepository implements IAppointmentRepository {
   }
 
   async updateStatus(id: number, status: AppointmentStatus): Promise<boolean> {
-    const result = await this.db.query<any>(`UPDATE appointments SET status = ? WHERE id = ?`, [status, id]);
+    return this.db.transaction(async (connection) => {
+      // Get the appointment details first
+      const [appointments] = await connection.query<any[]>(
+        `SELECT doctor_id, day_of_week, start_time, end_time FROM appointments WHERE id = ?`,
+        [id]
+      );
 
-    return result.affectedRows > 0;
+      if (!appointments.length) {
+        throw new DatabaseError("Appointment not found", "UPDATE_APPOINTMENT_STATUS_NOT_FOUND");
+      }
+
+      const { doctor_id, day_of_week, start_time, end_time } = appointments[0];
+
+      // Update the appointment status
+      const [updateResult] = await connection.query<any>(
+        `UPDATE appointments SET status = ?, updated_at = NOW() WHERE id = ?`,
+        [status, id]
+      );
+
+      if (updateResult.affectedRows === 0) return false;
+
+      // Determine if availability should be updated
+      const isAvailableAgain = status === "CANCELLED" || "COMPLETED";
+
+      // Update availability
+      await connection.query(
+        `UPDATE availabilities
+         SET booked = ?, available = ?, updated_at = NOW()
+         WHERE doctor_id = ? AND day_of_week = ? AND start_time = ? AND end_time = ?`,
+        [isAvailableAgain ? false : true, isAvailableAgain ? true : false, doctor_id, day_of_week, start_time, end_time]
+      );
+
+      return true;
+    });
   }
 
   async delete(id: number): Promise<boolean> {
