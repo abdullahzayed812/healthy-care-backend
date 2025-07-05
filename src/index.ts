@@ -3,9 +3,9 @@ import { createServer } from "./server";
 import { checkRequiredEnvVars } from "./utils/checkEnvVars";
 import { container } from "./di/container";
 
-(async () => {
-  dotenv.config();
+dotenv.config();
 
+(async () => {
   const { ENV, PORT } = process.env;
 
   checkRequiredEnvVars(["ENV", "PORT", "JWT_SECRET", "DB_HOST", "DB_USER", "DB_PASSWORD", "DB_NAME"]);
@@ -13,7 +13,9 @@ import { container } from "./di/container";
   container.dbManager.runMigrations();
   container.dbManager.runSeeds();
 
-  const server = await createServer();
+  const { httpServer } = await createServer();
 
-  server.listen(PORT, () => console.log(`Listening on port ${PORT} in ${ENV} environment.`));
+  httpServer.listen(PORT, () => {
+    console.log(`✅ Listening on port ${PORT} in ${ENV} environment.`);
+  });
 })();

@@ -1,7 +1,9 @@
 import express from "express";
+import http from "node:http";
 import cors from "cors";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { Server as SocketIOServer } from "socket.io";
 
 import doctorRouter from "./presentation/routes/doctor.routes";
 import authRouter from "./presentation/routes/auth.routes";
@@ -12,6 +14,7 @@ import userRouter from "./presentation/routes/user.routes";
 
 import { errorHandlerMiddleware } from "./presentation/middlewares/errorHandler";
 import { requestLoggerMiddleware } from "./presentation/middlewares/requestLogger";
+import { setSocketServer } from "./infrastructure/websocket/socket";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,5 +43,26 @@ export async function createServer(logRequests: boolean = true) {
   // Error handler
   app.use(errorHandlerMiddleware);
 
-  return app;
+  // Create HTTP and WebSocket servers
+  const httpServer = http.createServer(app);
+  const io = new SocketIOServer(httpServer, {
+    cors: {
+      origin: "http://localhost:8080",
+      methods: ["GET", "POST"],
+      credentials: true,
+    },
+  });
+
+  io.on("connection", (socket) => {
+    console.log(`🔌 New client connected: ${socket.id}`);
+
+    socket.on("disconnect", () => {
+      console.log(`❌ Client disconnected: ${socket.id}`);
+    });
+  });
+
+  // Make `io` accessible to your app
+  setSocketServer(io);
+
+  return { httpServer, io };
 }

@@ -21,6 +21,7 @@ import {
   UpdateAppointmentStatusResponse,
 } from "../../core/dto/appointment.dto";
 import { handleErrorResponse } from "../../utils/errors/errorResponse";
+import { getSocketServer } from "../../infrastructure/websocket/socket";
 
 export class AppointmentController {
   constructor(private service: AppointmentService) {}
@@ -120,6 +121,10 @@ export class AppointmentController {
         res.status(404).json({ error: "Can't create appointment." });
         return;
       }
+
+      // Emit event
+      const io = getSocketServer();
+      io.emit("appointment:created", appointment);
 
       res.status(201).json(appointment);
     } catch (error: any) {
