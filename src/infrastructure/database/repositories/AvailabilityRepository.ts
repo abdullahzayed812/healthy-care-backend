@@ -58,7 +58,8 @@ export class AvailabilityRepository implements IAvailabilityRepository {
           row.end_time,
           row.available,
           new Date(row.created_at),
-          new Date(row.updated_at)
+          new Date(row.updated_at),
+          row.booked
         )
     );
   }

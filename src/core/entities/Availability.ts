@@ -7,6 +7,7 @@ export class Availability {
     public endTime: string, // e.g., '17:00'
     public available: boolean,
     public createdAt: Date = new Date(),
-    public updatedAt: Date = new Date()
+    public updatedAt: Date = new Date(),
+    public booked?: boolean
   ) {}
 }

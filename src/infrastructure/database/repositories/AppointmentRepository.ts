@@ -279,7 +279,7 @@ export class AppointmentRepository implements IAppointmentRepository {
         const [availabilityRows] = await connection.query(
           `
           SELECT * FROM availabilities
-          WHERE doctor_id = ? AND day_of_week = ? AND available = TRUE
+          WHERE doctor_id = ? AND day_of_week = ? AND booked = FALSE
           AND start_time <= ? AND end_time >= ?`,
           [doctorId, dayOfWeek, startTime, endTime]
         );
@@ -312,7 +312,7 @@ export class AppointmentRepository implements IAppointmentRepository {
         await connection.query(
           `
           UPDATE availabilities
-          SET booked = TRUE, available = FALSE, updated_at = NOW()
+          SET booked = TRUE, updated_at = NOW()
           WHERE doctor_id = ? AND day_of_week = ? AND start_time = ? AND end_time = ?`,
           [doctorId, dayOfWeek, startTime, endTime]
         );
