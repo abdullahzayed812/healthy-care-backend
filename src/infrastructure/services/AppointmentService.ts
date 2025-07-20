@@ -29,7 +29,7 @@ export class AppointmentService {
     return this.appointmentRepo.findByPatientId(patientId);
   }
 
-  async create(data: CreateAppointmentRequest): Promise<Appointment | null> {
+  async create(data: CreateAppointmentRequest): Promise<IGetAppointmentsWithDoctorDate | null> {
     return this.appointmentRepo.create(data);
   }
 

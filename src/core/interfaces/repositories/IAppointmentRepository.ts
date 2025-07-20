@@ -7,7 +7,7 @@ export interface IAppointmentRepository {
   findById(id: number): Promise<Appointment | null>;
   findByDoctorId(doctorId: number): Promise<IGetAppointmentsWithDoctorDate[] | null>;
   findByPatientId(patientId: number): Promise<IGetAppointmentsWithDoctorDate[] | null>;
-  create(appointment: CreateAppointmentRequest): Promise<Appointment | null>;
+  create(appointment: CreateAppointmentRequest): Promise<IGetAppointmentsWithDoctorDate | null>;
   update(id: number, data: Partial<Appointment>): Promise<boolean>;
   updateStatus(id: number, status: AppointmentStatus): Promise<boolean>;
   delete(id: number): Promise<boolean>;

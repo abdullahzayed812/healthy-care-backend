@@ -112,7 +112,7 @@ export class AppointmentController {
     }
   };
 
-  create: ExpressHandler<CreateAppointmentRequest, CreateAppointmentResponse> = async (req, res) => {
+  create: ExpressHandler<CreateAppointmentRequest, IGetAppointmentsWithDoctorDate> = async (req, res) => {
     try {
       const appointment = await this.service.create(req.body as CreateAppointmentRequest);
 

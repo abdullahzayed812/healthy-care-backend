@@ -144,34 +144,34 @@ export class AppointmentRepository implements IAppointmentRepository {
     try {
       const result = await this.db.query<any[]>(
         `
-        SELECT 
-          a.id AS appointment_id,
-          a.day_of_week,
-          a.start_time,
-          a.end_time,
-          a.reason,
-          a.status,
-          a.date,
+          SELECT 
+            a.id AS appointment_id,
+            a.day_of_week,
+            a.start_time,
+            a.end_time,
+            a.reason,
+            a.status,
+            a.date,
 
-          d.id AS doctor_id,
-          d.specialty,
-          d.experience,
-          d.reviews,
-          d.bio,
+            d.id AS doctor_id,
+            d.specialty,
+            d.experience,
+            d.reviews,
+            d.bio,
 
-          u_doctor.email AS doctor_email,
-          u_doctor.username AS doctor_username,
-          u_doctor.phone_number AS doctor_phone,
-          u_patient.email AS patient_email,
-          u_patient.username AS patient_username,
-          u_patient.phone_number AS patient_phone
+            u_doctor.email AS doctor_email,
+            u_doctor.username AS doctor_username,
+            u_doctor.phone_number AS doctor_phone,
+            u_patient.email AS patient_email,
+            u_patient.username AS patient_username,
+            u_patient.phone_number AS patient_phone
 
-        FROM appointments a
-        JOIN doctors d ON a.doctor_id = d.id
-        JOIN patients p ON a.patient_id = p.id
-        JOIN users u_doctor ON d.id = u_doctor.id
-        JOIN users u_patient ON p.id = u_patient.id
-        WHERE a.doctor_id = ?
+          FROM appointments a
+          JOIN doctors d ON a.doctor_id = d.id
+          JOIN patients p ON a.patient_id = p.id
+          JOIN users u_doctor ON d.id = u_doctor.id
+          JOIN users u_patient ON p.id = u_patient.id
+          WHERE a.doctor_id = ?
         `,
         [doctorId]
       );
@@ -270,12 +270,12 @@ export class AppointmentRepository implements IAppointmentRepository {
     }
   }
 
-  async create(appointment: CreateAppointmentRequest): Promise<Appointment | null> {
-    const { doctorId, patientId, reason, dayOfWeek, startTime, endTime, date, status } = appointment;
+  async create(appointment: CreateAppointmentRequest): Promise<IGetAppointmentsWithDoctorDate | null> {
+    const { doctorId, patientId, reason, dayOfWeek, startTime, endTime, date } = appointment;
 
     try {
       return this.db.transaction(async (connection) => {
-        // Check availability
+        // 1. Check doctor's availability
         const [availabilityRows] = await connection.query(
           `
           SELECT * FROM availabilities
@@ -288,7 +288,7 @@ export class AppointmentRepository implements IAppointmentRepository {
           throw new DatabaseError("Doctor is not available at the requested time", "CREATE_APPOINTMENT_DB_ERROR");
         }
 
-        // Check for overlapping appointment
+        // 2. Check for overlapping appointments
         const [appointmentRows] = await connection.query(
           `
           SELECT * FROM appointments
@@ -301,14 +301,18 @@ export class AppointmentRepository implements IAppointmentRepository {
           throw new DatabaseError("This time slot is already booked", "CREATE_APPOINTMENT_DB_ERROR");
         }
 
-        // Insert new appointment
-        const [result] = await connection.query<any>(
+        // 3. Insert appointment
+        const [insertResult] = await connection.query<any>(
           `
           INSERT INTO appointments (doctor_id, patient_id, reason, day_of_week, start_time, end_time, date)
           VALUES (?, ?, ?, ?, ?, ?, ?)`,
           [doctorId, patientId, reason, dayOfWeek, startTime, endTime, date]
         );
 
+        const insertedId = insertResult.insertId;
+        if (!insertedId) return null;
+
+        // 4. Update availability
         await connection.query(
           `
           UPDATE availabilities
@@ -317,24 +321,78 @@ export class AppointmentRepository implements IAppointmentRepository {
           [doctorId, dayOfWeek, startTime, endTime]
         );
 
-        const id = result.insertId;
-
-        if (!id) return null;
-
-        return new Appointment(
-          id,
-          appointment.doctorId,
-          appointment.patientId,
-          appointment.dayOfWeek,
-          appointment.startTime,
-          appointment.endTime,
-          appointment.date,
-          appointment.reason,
-          appointment.status
+        // 5. Fetch full appointment with joins (same as in findByDoctorId)
+        const [rows] = await connection.query(
+          `
+          SELECT 
+            a.id AS appointment_id,
+            a.day_of_week,
+            a.start_time,
+            a.end_time,
+            a.reason,
+            a.status,
+            a.date,
+            a.created_at,
+            a.updated_at,
+  
+            d.id AS doctor_id,
+            d.specialty,
+            d.experience,
+            d.reviews,
+            d.bio,
+  
+            u_doctor.email AS doctor_email,
+            u_doctor.username AS doctor_username,
+            u_doctor.phone_number AS doctor_phone,
+  
+            p.id AS patient_id,
+            u_patient.email AS patient_email,
+            u_patient.username AS patient_username,
+            u_patient.phone_number AS patient_phone
+  
+          FROM appointments a
+          JOIN doctors d ON a.doctor_id = d.id
+          JOIN patients p ON a.patient_id = p.id
+          JOIN users u_doctor ON d.id = u_doctor.id
+          JOIN users u_patient ON p.id = u_patient.id
+          WHERE a.id = ?
+          `,
+          [insertedId]
         );
+
+        const row = (rows as any[])[0];
+        if (!row) return null;
+
+        // 6. Map result into desired format
+        return {
+          id: row.appointment_id,
+          dayOfWeek: row.day_of_week,
+          startTime: row.start_time,
+          endTime: row.end_time,
+          date: row.date,
+          reason: row.reason,
+          status: row.status,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+          doctor: {
+            id: row.doctor_id,
+            email: row.doctor_email,
+            username: row.doctor_username,
+            phone: row.doctor_phone,
+            specialty: row.specialty,
+            bio: row.bio,
+            experience: row.experience,
+            reviews: row.reviews,
+          },
+          patient: {
+            id: row.patient_id,
+            username: row.patient_username,
+            email: row.patient_email,
+          },
+        };
       });
     } catch (error) {
-      console.error("Error create appointment:", error);
+      console.error("Error creating appointment:", error);
       throw new DatabaseError("Failed to create appointment", "CREATE_APPOINTMENT_DB_ERROR");
     }
   }
