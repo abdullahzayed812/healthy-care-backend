@@ -22,8 +22,13 @@ const __dirname = path.dirname(__filename);
 export async function createServer(logRequests: boolean = true) {
   const app = express();
 
-  // Middleware
-  app.use(cors());
+  app.use(
+    cors({
+      origin: ["http://localhost:8080", "http://192.168.0.128:8080"],
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      credentials: true,
+    })
+  );
   app.use(express.json());
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 

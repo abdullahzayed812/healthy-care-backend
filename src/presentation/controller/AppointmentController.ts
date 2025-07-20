@@ -83,7 +83,6 @@ export class AppointmentController {
   ) => {
     try {
       const id = parseInt(req.params.id);
-
       const appointments = await this.service.findByDoctorId(id);
 
       if (!appointments) {
@@ -139,10 +138,12 @@ export class AppointmentController {
     try {
       const id = parseInt(req.params.id);
       const updated = await this.service.update(id, req.body);
+
       if (!updated) {
         res.status(404).json({ error: "Appointment not found" });
         return;
       }
+
       res.status(200).json({ message: "Appointment updated successfully" });
     } catch (error) {
       handleErrorResponse(res, error);
@@ -157,7 +158,6 @@ export class AppointmentController {
     try {
       const id = parseInt(req.params.id);
       const { status } = req.body;
-
       const updated = await this.service.updateStatus(id, status);
 
       if (!updated) {
@@ -178,10 +178,12 @@ export class AppointmentController {
     try {
       const id = parseInt(req.params.id);
       const deleted = await this.service.delete(id);
+
       if (!deleted) {
         res.status(404).json({ error: "Appointment not found" });
         return;
       }
+
       res.status(200).json({ message: "Appointment deleted successfully" });
     } catch (error) {
       handleErrorResponse(res, error);
