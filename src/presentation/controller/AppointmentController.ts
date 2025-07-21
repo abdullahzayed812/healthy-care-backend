@@ -41,7 +41,7 @@ export class AppointmentController {
     }
   };
 
-  getAllWithRelations: ExpressHandler<{}, GetAllAppointmentsWithRelationsResponse> = async (req, res) => {
+  getAllWithRelations: ExpressHandler<{}, any> = async (req, res) => {
     try {
       const appointments = await this.service.getAllWithRelations();
 
@@ -50,7 +50,7 @@ export class AppointmentController {
         return;
       }
 
-      res.status(200).json({ appointments });
+      res.status(200).json(appointments);
       return;
     } catch (error) {
       handleErrorResponse(res, error);

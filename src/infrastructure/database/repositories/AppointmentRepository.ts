@@ -75,17 +75,15 @@ export class AppointmentRepository implements IAppointmentRepository {
       if (!result.length) return null;
 
       return result.map((row) => ({
-        appointment: {
-          id: row.appointment_id,
-          dayOfWeek: row.day_of_week,
-          startTime: row.start_time,
-          endTime: row.end_time,
-          date: row.date,
-          reason: row.reason,
-          status: row.status,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-        },
+        id: row.appointment_id,
+        dayOfWeek: row.day_of_week,
+        startTime: row.start_time,
+        endTime: row.end_time,
+        date: row.date,
+        reason: row.reason,
+        status: row.status,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
         doctor: {
           id: row.doctor_id,
           email: row.doctor_email,
@@ -98,11 +96,8 @@ export class AppointmentRepository implements IAppointmentRepository {
         },
         patient: {
           id: row.patient_id,
-          email: row.patient_email,
           username: row.patient_username,
-          phone: row.patient_phone,
-          dateOfBirth: row.date_of_birth,
-          gender: row.gender,
+          email: row.patient_email,
         },
       }));
     } catch (error) {

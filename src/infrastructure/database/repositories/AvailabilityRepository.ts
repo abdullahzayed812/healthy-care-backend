@@ -2,7 +2,6 @@ import { MySqlConnection } from "../connections/MySqlConnection";
 import { Availability } from "../../../core/entities/Availability";
 import { IAvailabilityRepository } from "../../../core/interfaces/repositories/IAvailabilityRepository";
 import {
-  CreateAvailabilityRequest,
   CreateAvailabilityResponse,
   CreateBulkAvailabilityRequest,
   CreateBulkAvailabilityResponse,
