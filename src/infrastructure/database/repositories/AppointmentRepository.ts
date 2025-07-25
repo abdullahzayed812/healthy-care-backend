@@ -286,9 +286,11 @@ export class AppointmentRepository implements IAppointmentRepository {
         // 2. Check for overlapping appointments
         const [appointmentRows] = await connection.query(
           `
-          SELECT * FROM appointments
-          WHERE doctor_id = ? AND day_of_week = ?
-          AND start_time = ? AND end_time = ?`,
+            SELECT * FROM appointments
+            WHERE doctor_id = ? AND day_of_week = ?
+            AND start_time = ? AND end_time = ?
+            AND status IN ('PENDING', 'SCHEDULED')
+          `,
           [doctorId, dayOfWeek, startTime, endTime]
         );
 
@@ -308,13 +310,14 @@ export class AppointmentRepository implements IAppointmentRepository {
         if (!insertedId) return null;
 
         // 4. Update availability
-        await connection.query(
+        const result = await connection.query(
           `
           UPDATE availabilities
           SET booked = TRUE, updated_at = NOW()
           WHERE doctor_id = ? AND day_of_week = ? AND start_time = ? AND end_time = ?`,
           [doctorId, dayOfWeek, startTime, endTime]
         );
+        console.log(result);
 
         // 5. Fetch full appointment with joins (same as in findByDoctorId)
         const [rows] = await connection.query(
@@ -454,9 +457,9 @@ export class AppointmentRepository implements IAppointmentRepository {
       // Update availability
       await connection.query(
         `UPDATE availabilities
-         SET booked = ?, available = ?, updated_at = NOW()
+         SET booked = ?, updated_at = NOW()
          WHERE doctor_id = ? AND day_of_week = ? AND start_time = ? AND end_time = ?`,
-        [isAvailableAgain ? false : true, isAvailableAgain ? true : false, doctor_id, day_of_week, start_time, end_time]
+        [isAvailableAgain ? false : true, doctor_id, day_of_week, start_time, end_time]
       );
 
       return true;

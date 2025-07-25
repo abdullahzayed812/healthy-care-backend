@@ -19,13 +19,15 @@ import { setSocketServer } from "./infrastructure/websocket/socket";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const allowedOrigins = ["http://localhost:8080", "http://192.168.0.128:8080"];
+
 export async function createServer(logRequests: boolean = true) {
   const app = express();
 
   app.use(
     cors({
-      origin: ["http://localhost:8080", "http://192.168.0.128:8080"],
-      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      origin: allowedOrigins,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       credentials: true,
     })
   );
@@ -52,9 +54,16 @@ export async function createServer(logRequests: boolean = true) {
   const httpServer = http.createServer(app);
   const io = new SocketIOServer(httpServer, {
     cors: {
-      origin: "http://localhost:8080",
-      methods: ["GET", "POST"],
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error("Not allowed by CORS"));
+        }
+      },
       credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     },
   });
 

@@ -158,12 +158,29 @@ export class AppointmentController {
     try {
       const id = parseInt(req.params.id);
       const { status } = req.body;
+
+      // Get the appointment first to get patient and doctor IDs
+      const appointment = await this.service.getById(id);
+      if (!appointment) {
+        res.status(404).json({ error: "Appointment not found" });
+        return;
+      }
+
       const updated = await this.service.updateStatus(id, status);
 
       if (!updated) {
         res.status(404).json({ error: "Appointment not found or update failed" });
         return;
       }
+
+      // Emit to both patient and doctor with all necessary data
+      const io = getSocketServer();
+      io.emit("appointment:statusUpdated", {
+        id: id.toString(),
+        status,
+        patientId: appointment.patientId,
+        doctorId: appointment.doctorId,
+      });
 
       res.status(200).json({ message: "Appointment status updated successfully" });
     } catch (error) {
