@@ -2,13 +2,11 @@ import { AppointmentService } from "../../infrastructure/services/AppointmentSer
 import { ExpressHandler } from "../../utils/types/apis";
 import {
   CreateAppointmentRequest,
-  CreateAppointmentResponse,
   DeleteAppointmentParams,
   DeleteAppointmentRequest,
   DeleteAppointmentResponse,
   GetAllAppointmentsRequest,
   GetAllAppointmentsResponse,
-  GetAllAppointmentsWithRelationsResponse,
   GetAppointmentByIdParams,
   GetAppointmentByIdRequest,
   GetAppointmentByIdResponse,
@@ -178,8 +176,6 @@ export class AppointmentController {
       io.emit("appointment:statusUpdated", {
         id: id.toString(),
         status,
-        patientId: appointment.patientId,
-        doctorId: appointment.doctorId,
       });
 
       res.status(200).json({ message: "Appointment status updated successfully" });
