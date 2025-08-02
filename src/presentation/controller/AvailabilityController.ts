@@ -14,6 +14,7 @@ import {
   UpdateAvailabilityResponse,
 } from "../../core/dto/availability.dto";
 import { AvailabilityService } from "../../infrastructure/services/AvailabilityService";
+import { getSocketServer } from "../../infrastructure/websocket/socket";
 import { ExpressHandler } from "../../utils/types/apis";
 
 export class AvailabilityController {
@@ -60,6 +61,10 @@ export class AvailabilityController {
   public create: ExpressHandler<CreateAvailabilityRequest, CreateAvailabilityResponse> = async (req, res) => {
     try {
       const availability = await this.availabilityService.create(req.body as CreateAvailabilityRequest);
+
+      const io = getSocketServer();
+      io.emit("availability-created", { type: "created", data: availability });
+
       res.status(201).json(availability);
     } catch (err) {
       res.status(500).json({ error: "Failed to create availability", details: String(err) });
@@ -86,13 +91,20 @@ export class AvailabilityController {
     async (req, res) => {
       try {
         const id = parseInt(req.params.id);
-
         const success = await this.availabilityService.update(id, req.body as UpdateAvailabilityRequest);
 
         if (!success) {
           res.status(404).json({ error: "Not found", details: "Availability not found" });
           return;
         }
+
+        // Get updated availability for real-time broadcast
+        const updatedAvailability = await this.availabilityService.getById(id);
+
+        // Emit real-time update
+        const io = getSocketServer();
+        io.emit("availability-updated", { type: "updated", data: updatedAvailability });
+
         res.json({ message: "Availability updated successfully." });
         return;
       } catch (err) {

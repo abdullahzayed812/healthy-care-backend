@@ -122,6 +122,7 @@ export class AppointmentController {
       // Emit event
       const io = getSocketServer();
       io.emit("appointment:created", appointment);
+      io.emit("availability-booked", { type: "created", data: [] });
 
       res.status(201).json(appointment);
     } catch (error: any) {
